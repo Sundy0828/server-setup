@@ -2,32 +2,32 @@ services:
   # -----------------------
   # 🔐 VPN egress for download clients
   # -----------------------
-  gluetun:
-    image: qmcgaw/gluetun:latest
-    container_name: gluetun
-    cap_add:
-      - NET_ADMIN
-    environment:
-      - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER}
-      - VPN_TYPE=${VPN_TYPE}
-      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
-      - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESSES}
-      - TZ=${TZ}
-      - FIREWALL_INPUT_PORTS=8080,6881
-    ports:
-      - "8080:8080"
-      - "6881:6881"
-      - "6881:6881/udp"
-    volumes:
-      - ./config/gluetun:/gluetun
-    restart: unless-stopped
+  # gluetun:
+  #   image: qmcgaw/gluetun:latest
+  #   container_name: gluetun
+  #   cap_add:
+  #     - NET_ADMIN
+  #   environment:
+  #     - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER}
+  #     - VPN_TYPE=${VPN_TYPE}
+  #     - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
+  #     - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESSES}
+  #     - TZ=${TZ}
+  #     - FIREWALL_INPUT_PORTS=8080,6881
+  #   ports:
+  #     - "8080:8080"
+  #     - "6881:6881"
+  #     - "6881:6881/udp"
+  #   volumes:
+  #     - ./config/gluetun:/gluetun
+  #   restart: unless-stopped
 
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
     container_name: qbittorrent
-    network_mode: service:gluetun
-    depends_on:
-      - gluetun
+    # network_mode: service:gluetun
+    # depends_on:
+    #   - gluetun
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
@@ -61,7 +61,6 @@ services:
       - "32400:32400/tcp"
       - "1900:1900/udp"
       - "3005:3005/tcp"
-      - "5353:5353/udp"
       - "8324:8324/tcp"
       - "32410:32410/udp"
       - "32412:32412/udp"
@@ -121,19 +120,19 @@ services:
       - ./data:/data
     restart: unless-stopped
 
-  readarr:
-    image: lscr.io/linuxserver/readarr:develop
-    container_name: readarr
-    ports:
-      - "8787:8787"
-    environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TZ}
-    volumes:
-      - ./config/readarr:/config
-      - ./data:/data
-    restart: unless-stopped
+  # readarr:
+  #   image: lscr.io/linuxserver/readarr:amd64-nightly
+  #   container_name: readarr
+  #   ports:
+  #     - "8787:8787"
+  #   environment:
+  #     - PUID=${PUID}
+  #     - PGID=${PGID}
+  #     - TZ=${TZ}
+  #   volumes:
+  #     - ./config/readarr:/config
+  #     - ./data:/data
+  #   restart: unless-stopped
 
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:latest
@@ -186,7 +185,7 @@ services:
   tailscale-overseerr:
     image: tailscale/tailscale:latest
     container_name: tailscale-overseerr
-    hostname: ${TS_HOSTNAME}
+    # hostname: ${TS_HOSTNAME}
     depends_on:
       - overseerr
     cap_add:
