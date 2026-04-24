@@ -5,6 +5,7 @@ This setup is split into independent stacks:
 - `plex-stack` for Plex + Arr + Overseerr + Tailscale + download stack
 - `minecraft-stack` for one-at-a-time Minecraft with copyable server templates
 - `homeassistant-stack` for Home Assistant
+- `adblock-stack` for network-wide DNS blocking (AdGuard Home)
 
 ## 1) Plex stack setup
 
@@ -59,13 +60,23 @@ Create each world/server instance:
    - `MC_PORT` (use `25565` for the active one)
    - `MC_TYPE=PAPER` for vanilla-ish, or `MC_TYPE=AUTO_CURSEFORGE` for modpacks
    - `CF_PAGE_URL` for modpacks (CurseForge URL)
+   - Optional playit.gg:
+     - `PLAYIT_SECRET_KEY` from playit.gg dashboard
 4. Start from that server folder:
    - `docker compose up -d`
+   - With playit.gg sidecar:
+     - `docker compose --profile playit up -d`
 5. Switch server:
    - Stop current server: `docker compose down`
    - Start another server folder (usually also on `MC_PORT=25565`)
 
 Each server folder keeps its own world/config data in `servers/<server-name>/data`.
+
+### playit.gg architecture recommendation
+
+- For your current workflow (one active Minecraft instance at a time), use one playit sidecar in the active server folder.
+- Running one playit per instance is fine if only one is up at a time.
+- If you later run multiple Minecraft instances simultaneously, move to one dedicated global playit stack and manage multiple tunnels from that agent.
 
 ### View Logs
 
@@ -130,7 +141,27 @@ From `homeassistant-stack`:
 3. Open:
    - `http://<server-ip>:8123`
 
-## 5) Recommended app wiring order
+## 5) Start ad-block DNS stack
+
+From `adblock-stack`:
+
+1. Copy `.env.example` to `.env`.
+2. Start:
+   - `docker compose -f compose.yml up -d`
+3. First-run setup wizard:
+   - `http://<server-ip>:3000`
+4. Admin UI (after setup):
+   - `http://<server-ip>:8081`
+
+Set router/device DNS to your server IP to apply blocking network-wide.
+
+### AdGuard Home vs uBlock Origin / Brave
+
+- DNS blocking is excellent for network-wide domain blocking.
+- Browser blockers (especially uBlock Origin) still provide stronger in-page/script/cosmetic blocking.
+- Best result: use this DNS stack + keep uBlock Origin in browser.
+
+## 6) Recommended app wiring order
 
 1. Configure qBittorrent download categories/paths first.
 2. Add indexers in Prowlarr.
@@ -138,7 +169,7 @@ From `homeassistant-stack`:
 4. In each Arr app, use root folders under `/data/media/...` and downloads under `/data/downloads`.
 5. Connect Overseerr to Plex, Sonarr, and Radarr.
 
-## 6) TRaSH guides (highly recommended)
+## 7) TRaSH guides (highly recommended)
 
 Use TRaSH guides to import quality profiles and custom formats:
 
@@ -150,7 +181,7 @@ Typical order:
 2. Import naming and release profile recommendations.
 3. Revisit score thresholds after a few days of downloads.
 
-## 7) Security notes
+## 8) Security notes
 
 - Do not expose Arr/qBittorrent ports directly to the internet.
 - Keep Overseerr private through Tailscale (no router port-forward needed).

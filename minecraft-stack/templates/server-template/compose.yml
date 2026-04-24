@@ -17,3 +17,15 @@ services:
     volumes:
       - ./data:/data
     restart: unless-stopped
+
+  playit:
+    image: ghcr.io/playit-cloud/playit-agent:latest
+    container_name: ${PLAYIT_CONTAINER_NAME:-playit-minecraft}
+    profiles: ["playit"]
+    depends_on:
+      - minecraft
+    environment:
+      - SECRET_KEY=${PLAYIT_SECRET_KEY:-}
+    volumes:
+      - ./data/playit:/root/.config/playit_gg
+    restart: unless-stopped
