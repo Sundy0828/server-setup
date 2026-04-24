@@ -1,0 +1,18 @@
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Docker volumes and local data directories
+**/data
+**/logs
+**/certs
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Docker Compose specific local overrides (if used)
+docker-compose.override.yml   

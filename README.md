@@ -1,0 +1,103 @@
+# Home Server Setup
+
+This setup is split into independent stacks:
+
+- `plex-stack` for Plex + Arr + Overseerr + Tailscale + download stack
+- `minecraft-stack` for one-at-a-time Minecraft with copyable server templates
+- `homeassistant-stack` for Home Assistant
+
+## 1) Plex stack setup
+
+1. Go to `plex-stack`.
+2. Copy `.env.example` to `.env` and fill in secrets.
+3. Update `config/tailscale-overseerr/serve.json` so host matches your tailnet DNS name.
+3. Create directories if needed:
+   - `plex-stack/config/*`
+   - `plex-stack/data/downloads`
+   - `plex-stack/data/media`
+
+## 2) Start plex stack
+
+From `plex-stack`:
+
+`docker compose -f compose.yml up -d`
+
+### Service URLs (local LAN)
+
+- Plex: `http://<server-ip>:32400/web`
+- Sonarr: `http://<server-ip>:8989`
+- Radarr: `http://<server-ip>:7878`
+- Lidarr: `http://<server-ip>:8686`
+- Readarr: `http://<server-ip>:8787`
+- Prowlarr: `http://<server-ip>:9696`
+- Bazarr: `http://<server-ip>:6767`
+- qBittorrent: `http://<server-ip>:8080`
+- SABnzbd (optional): `http://<server-ip>:8085`
+
+Overseerr is intentionally not exposed on LAN ports; access it via Tailscale HTTPS.
+
+Optional Usenet downloader:
+
+- SABnzbd is included behind the `usenet` profile and is off by default.
+- Start with SABnzbd enabled:
+  - `docker compose --profile usenet -f compose.yml up -d`
+
+## 3) Start Minecraft stack (copy/rename template)
+
+Template folder:
+
+`minecraft-stack/templates/server-template`
+
+Create each world/server instance:
+
+1. Copy `minecraft-stack/templates/server-template` to `minecraft-stack/servers/<server-name>`.
+2. Copy `.env.example` to `.env` inside that new server folder.
+3. Edit `.env`:
+   - `MC_CONTAINER_NAME` (unique name per server)
+   - `MC_PORT` (use `25565` for the active one)
+   - `MC_TYPE=PAPER` for vanilla-ish, or `MC_TYPE=AUTO_CURSEFORGE` for modpacks
+   - `CF_PAGE_URL` for modpacks (CurseForge URL)
+4. Start from that server folder:
+   - `docker compose up -d`
+5. Switch server:
+   - Stop current server: `docker compose down`
+   - Start another server folder (usually also on `MC_PORT=25565`)
+
+Each server folder keeps its own world/config data in `servers/<server-name>/data`.
+
+## 4) Start Home Assistant stack
+
+From `homeassistant-stack`:
+
+1. Copy `.env.example` to `.env`.
+2. Start:
+   - `docker compose -f compose.yml up -d`
+3. Open:
+   - `http://<server-ip>:8123`
+
+## 5) Recommended app wiring order
+
+1. Configure qBittorrent download categories/paths first.
+2. Add indexers in Prowlarr.
+3. Sync Prowlarr apps to Sonarr/Radarr/Lidarr/Readarr.
+4. In each Arr app, use root folders under `/data/media/...` and downloads under `/data/downloads`.
+5. Connect Overseerr to Plex, Sonarr, and Radarr.
+
+## 6) TRaSH guides (highly recommended)
+
+Use TRaSH guides to import quality profiles and custom formats:
+
+- [TRaSH Guides](https://trash-guides.info/)
+
+Typical order:
+
+1. Import quality profiles and custom formats to Sonarr/Radarr.
+2. Import naming and release profile recommendations.
+3. Revisit score thresholds after a few days of downloads.
+
+## 7) Security notes
+
+- Do not expose Arr/qBittorrent ports directly to the internet.
+- Keep Overseerr private through Tailscale (no router port-forward needed).
+- Rotate `TS_AUTHKEY` and VPN keys periodically.
+- Keep Docker images updated (`docker compose pull` then `up -d`).
