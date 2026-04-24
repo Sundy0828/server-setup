@@ -44,6 +44,8 @@ Optional Usenet downloader:
 
 ## 3) Start Minecraft stack (copy/rename template)
 
+### Create server
+
 Template folder:
 
 `minecraft-stack/templates/server-template`
@@ -64,6 +66,59 @@ Create each world/server instance:
    - Start another server folder (usually also on `MC_PORT=25565`)
 
 Each server folder keeps its own world/config data in `servers/<server-name>/data`.
+
+### View Logs
+
+#### Live logs (recommended)
+
+```bash
+docker logs -f <container-name>
+```
+
+Example:
+```bash
+docker logs -f minecraft-test
+```
+
+Logs with timestamps
+
+```bash
+docker logs -f -t minecraft-test
+```
+
+Recent logs only
+
+```bash
+docker logs --tail 200 minecraft-test
+```
+
+#### File-based logs (most detailed)
+
+Each server writes logs here:
+
+```bash
+servers/<server-name>/data/logs/latest.log
+```
+
+Follow live:
+
+```bash
+tail -f servers/<server-name>/data/logs/latest.log
+```
+
+### Troubleshooting
+
+Paper version support is tracked here:
+
+https://papermc.io/downloads/paper
+
+Use this to:
+
+- verify supported Minecraft versions
+- choose valid MC_VERSION values
+- avoid using unsupported client/server combinations
+
+> If a version is not listed, Paper does not support it yet.
 
 ## 4) Start Home Assistant stack
 
