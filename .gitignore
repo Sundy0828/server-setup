@@ -3,8 +3,9 @@
 .env.*
 !.env.example
 
-# Docker volumes and local data directories
+# Docker volumes, data, and application configs (contains secrets)
 **/data
+**/config
 **/logs
 **/certs
 

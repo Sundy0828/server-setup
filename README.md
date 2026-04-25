@@ -6,13 +6,62 @@ This setup is split into independent stacks:
 - `minecraft-stack` for one-at-a-time Minecraft with copyable server templates
 - `homeassistant-stack` for Home Assistant
 - `adblock-stack` for network-wide DNS blocking (AdGuard Home)
+- `nginx-stack` for NGINX Proxy Manager (reverse proxy)
+
+## Quick Start with npm scripts
+
+**Start entire ecosystem:**
+
+```bash
+npm run start:all
+```
+
+**Start individual stacks:**
+
+```bash
+npm run start:nginx
+npm run start:adblock
+npm run start:homeassistant
+npm run start:plex
+npm run start:plex:usenet     # With SABnzbd (Usenet)
+```
+
+**Stop stacks:**
+
+```bash
+npm run stop:all
+npm run stop:plex
+npm run stop:homeassistant
+```
+
+**View logs:**
+
+```bash
+npm run logs:plex
+npm run logs:plex:sonarr
+npm run logs:plex:radarr
+npm run logs:plex:qbittorrent
+npm run logs:adblock
+npm run logs:homeassistant
+npm run logs:nginx
+```
+
+**Minecraft servers (manual mode):**
+
+Each server runs independently. To start a server:
+
+```bash
+cd minecraft-stack/servers/<server-name>
+docker compose up -d
+docker compose --profile playit up -d    # With playit.gg sidecar
+```
 
 ## 1) Plex stack setup
 
 1. Go to `plex-stack`.
 2. Copy `.env.example` to `.env` and fill in secrets.
 3. Update `config/tailscale-overseerr/serve.json` so host matches your tailnet DNS name.
-3. Create directories if needed:
+4. Create directories if needed:
    - `plex-stack/config/*`
    - `plex-stack/data/downloads`
    - `plex-stack/data/media`
@@ -87,6 +136,7 @@ docker logs -f <container-name>
 ```
 
 Example:
+
 ```bash
 docker logs -f minecraft-test
 ```

@@ -1,0 +1,46 @@
+version: "3.8"
+
+services:
+  nginx-db:
+    image: mysql:8.0
+    container_name: nginx-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-npm-root-pass}
+      MYSQL_DATABASE: npm
+      MYSQL_USER: npm
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-npm-pass}
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    networks:
+      - homelab
+    restart: unless-stopped
+
+  nginx:
+    image: "jc21/nginx-proxy-manager:latest"
+    container_name: nginx-pm
+    environment:
+      DB_MYSQL_HOST: nginx-db
+      DB_MYSQL_PORT: 3306
+      DB_MYSQL_USER: npm
+      DB_MYSQL_PASSWORD: ${MYSQL_PASSWORD:-npm-pass}
+      DB_MYSQL_NAME: npm
+    ports:
+      - "80:80"
+      - "443:443"
+      - "81:81"
+    volumes:
+      - ./data/letsencrypt:/etc/letsencrypt
+      - ./data/nginx:/data
+    depends_on:
+      - nginx-db
+    networks:
+      - homelab
+    restart: unless-stopped
+
+networks:
+  homelab:
+    external: true
+
+volumes:
+  mysql_data:
+    driver: local

@@ -1,0 +1,43 @@
+{
+  "name": "homelab-server-setup",
+  "version": "1.0.0",
+  "description": "Docker-based homelab stack management",
+  "private": true,
+  "scripts": {
+    "start:all": "npm run start:nginx && npm run start:adblock && npm run start:homeassistant && npm run start:plex",
+    "stop:all": "npm run stop:nginx && npm run stop:adblock && npm run stop:homeassistant && npm run stop:plex",
+    "logs:all": "echo 'Use: npm run logs:<service>'",
+    "start:nginx": "cd nginx-stack && docker compose up -d && cd ..",
+    "stop:nginx": "cd nginx-stack && docker compose down && cd ..",
+    "logs:nginx": "cd nginx-stack && docker compose logs -f && cd ..",
+    "start:adblock": "cd adblock-stack && docker compose up -d && cd ..",
+    "stop:adblock": "cd adblock-stack && docker compose down && cd ..",
+    "logs:adblock": "cd adblock-stack && docker compose logs -f && cd ..",
+    "start:homeassistant": "cd homeassistant-stack && docker compose up -d && cd ..",
+    "stop:homeassistant": "cd homeassistant-stack && docker compose down && cd ..",
+    "logs:homeassistant": "cd homeassistant-stack && docker compose logs -f && cd ..",
+    "start:plex": "cd plex-stack && docker compose up -d && cd ..",
+    "start:plex:usenet": "cd plex-stack && docker compose --profile usenet up -d && cd ..",
+    "stop:plex": "cd plex-stack && docker compose down && cd ..",
+    "logs:plex": "cd plex-stack && docker compose logs -f && cd ..",
+    "logs:plex:sonarr": "cd plex-stack && docker compose logs -f sonarr && cd ..",
+    "logs:plex:radarr": "cd plex-stack && docker compose logs -f radarr && cd ..",
+    "logs:plex:qbittorrent": "cd plex-stack && docker compose logs -f qbittorrent && cd ..",
+    "start:minecraft": "echo 'Usage: npm run start:minecraft -- <server-name>' && echo 'Example: npm run start:minecraft -- server-test'",
+    "start:minecraft:playit": "echo 'Usage: npm run start:minecraft:playit -- <server-name>' && echo 'Example: npm run start:minecraft:playit -- server-test'",
+    "stop:minecraft": "echo 'Usage: npm run stop:minecraft -- <server-name>' && echo 'Example: npm run stop:minecraft -- server-test'",
+    "logs:minecraft": "echo 'Usage: npm run logs:minecraft -- <server-name>' && echo 'Example: npm run logs:minecraft -- server-test'",
+    "setup": "echo 'Setup guide:' && echo '1. Copy .env.example to .env in each stack' && echo '2. Fill in required secrets' && echo '3. Create config and data directories' && echo '4. Run: npm run start:all'",
+    "down": "npm run stop:all"
+  },
+  "keywords": [
+    "docker",
+    "homelab",
+    "plex",
+    "arr-stack",
+    "minecraft",
+    "home-assistant"
+  ],
+  "author": "",
+  "license": "MIT"
+}
