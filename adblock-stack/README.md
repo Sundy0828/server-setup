@@ -32,10 +32,10 @@ Best setup: run this DNS stack for all devices **and** still use uBlock Origin i
 
 Open setup wizard:
 
-- `http://<server-ip>:3000`
+- `http://localhost:3000`
 
 After setup, admin UI is at:
 
-- `http://<server-ip>:8081`
+- `http://localhost:8081`
 
 Set your router DHCP DNS to this server IP (or set DNS per device).

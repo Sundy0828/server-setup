@@ -74,15 +74,15 @@ From `plex-stack`:
 
 ### Service URLs (local LAN)
 
-- Plex: `http://<server-ip>:32400/web`
-- Sonarr: `http://<server-ip>:8989`
-- Radarr: `http://<server-ip>:7878`
-- Lidarr: `http://<server-ip>:8686`
-- Readarr: `http://<server-ip>:8787`
-- Prowlarr: `http://<server-ip>:9696`
-- Bazarr: `http://<server-ip>:6767`
-- qBittorrent: `http://<server-ip>:8080`
-- SABnzbd (optional): `http://<server-ip>:8085`
+- Plex: `http://localhost:32400/web`
+- Sonarr: `http://localhost:8989`
+- Radarr: `http://localhost:7878`
+- Lidarr: `http://localhost:8686`
+- Readarr: `http://localhost:8787`
+- Prowlarr: `http://localhost:9696`
+- Bazarr: `http://localhost:6767`
+- qBittorrent: `http://localhost:8080`
+- SABnzbd (optional): `http://localhost:8085`
 
 Overseerr is intentionally not exposed on LAN ports; access it via Tailscale HTTPS.
 
@@ -189,7 +189,7 @@ From `homeassistant-stack`:
 2. Start:
    - `docker compose -f compose.yml up -d`
 3. Open:
-   - `http://<server-ip>:8123`
+   - `http://localhost:8123`
 
 ## 5) Start ad-block DNS stack
 
@@ -199,9 +199,9 @@ From `adblock-stack`:
 2. Start:
    - `docker compose -f compose.yml up -d`
 3. First-run setup wizard:
-   - `http://<server-ip>:3000`
+   - `http://localhost:3000`
 4. Admin UI (after setup):
-   - `http://<server-ip>:8081`
+   - `http://localhost:8081`
 
 Set router/device DNS to your server IP to apply blocking network-wide.
 
