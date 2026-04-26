@@ -8,4 +8,11 @@ services:
       - TZ=${TZ:-America/New_York}
     volumes:
       - ./config:/config
+    networks:
+      - homelab
     restart: unless-stopped
+
+networks:
+  default:
+    name: homelab
+    external: true

@@ -20,6 +20,8 @@ services:
       - "6881:6881/udp"
     volumes:
       - ./config/gluetun:/gluetun
+    networks:
+      - homelab
     restart: unless-stopped
 
   qbittorrent:
@@ -36,7 +38,7 @@ services:
     volumes:
       - ./config/qbittorrent:/config
       - ./data/downloads:/downloads
-    restart: unless-stopped
+    # Note: qbittorrent uses gluetun network, inherits its network config
 
   sabnzbd:
     image: lscr.io/linuxserver/sabnzbd:latest
@@ -52,6 +54,8 @@ services:
       - ./config/sabnzbd:/config
       - ./data/downloads:/downloads
       - ./data/incomplete-downloads:/incomplete-downloads
+    networks:
+      - homelab
     restart: unless-stopped
 
   plex:
@@ -76,6 +80,8 @@ services:
     volumes:
       - ./config/plex:/config
       - ./data/media:/data/media
+    networks:
+      - homelab
     restart: unless-stopped
 
   sonarr:
@@ -90,6 +96,8 @@ services:
     volumes:
       - ./config/sonarr:/config
       - ./data:/data
+    networks:
+      - homelab
     restart: unless-stopped
 
   radarr:
@@ -104,6 +112,8 @@ services:
     volumes:
       - ./config/radarr:/config
       - ./data:/data
+    networks:
+      - homelab
     restart: unless-stopped
 
   lidarr:
@@ -118,6 +128,8 @@ services:
     volumes:
       - ./config/lidarr:/config
       - ./data:/data
+    networks:
+      - homelab
     restart: unless-stopped
 
   readarr:
@@ -132,6 +144,8 @@ services:
     volumes:
       - ./config/readarr:/config
       - ./data:/data
+    networks:
+      - homelab
     restart: unless-stopped
 
   prowlarr:
@@ -145,6 +159,8 @@ services:
       - TZ=${TZ}
     volumes:
       - ./config/prowlarr:/config
+    networks:
+      - homelab
     restart: unless-stopped
 
   bazarr:
@@ -159,6 +175,8 @@ services:
     volumes:
       - ./config/bazarr:/config
       - ./data:/data
+    networks:
+      - homelab
     restart: unless-stopped
 
   flaresolverr:
@@ -169,6 +187,8 @@ services:
     environment:
       - TZ=${TZ}
       - LOG_LEVEL=info
+    networks:
+      - homelab
     restart: unless-stopped
 
   overseerr:
@@ -180,6 +200,8 @@ services:
       - TZ=${TZ}
     volumes:
       - ./config/overseerr:/config
+    networks:
+      - homelab
     restart: unless-stopped
 
   tailscale-overseerr:
@@ -203,3 +225,8 @@ services:
       - ./config/tailscale-overseerr/state:/var/lib/tailscale
       - ./config/tailscale-overseerr:/config
     restart: unless-stopped
+
+networks:
+  default:
+    name: homelab
+    external: true

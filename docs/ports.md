@@ -2,7 +2,7 @@
 
 | Service        | Port           |
 | -------------- | -------------- |
-| AdGuard        | 53, 3000, 8081 |
+| AdGuard        | 53, 3002, 8081 |
 | Home Assistant | 8123           |
 | Portainer      | 9000           |
 | Uptime Kuma    | 3001           |
@@ -17,3 +17,4 @@
 | qBittorrent    | 8080           |
 | Minecraft      | 25565          |
 | FlareSolverr   | 8191           |
+| Homepage       | 3000           |

@@ -9,6 +9,9 @@
 **/logs
 **/certs
 
+# Exceptions for example/template configs
+!infra-stack\yaml-config\homepage/
+
 # IDE and OS files
 .vscode/
 .idea/

@@ -4,7 +4,10 @@
   "description": "Docker-based homelab stack management",
   "private": true,
   "scripts": {
-    "start:all": "npm run start:adblock && npm run start:homeassistant && npm run start:plex && npm run start:infra",
+    "setup": "powershell -Command \".\\setup.ps1\"",
+    "setup:force": "powershell -Command \".\\setup.ps1 -Force\"",
+    "network:create": "docker network create homelab 2>nul || (echo Network 'homelab' already exists)",
+    "start:all": "npm run network:create && npm run start:adblock && npm run start:homeassistant && npm run start:plex && npm run start:infra",
     "stop:all": "npm run stop:adblock && npm run stop:homeassistant && npm run stop:plex && npm run stop:infra",
     "logs:all": "echo 'Use: npm run logs:<service>'",
     "start:adblock": "cd adblock-stack && docker compose up -d && cd ..",
@@ -29,7 +32,6 @@
     "start:minecraft:playit": "echo 'Usage: npm run start:minecraft:playit -- <server-name>' && echo 'Example: npm run start:minecraft:playit -- server-test'",
     "stop:minecraft": "echo 'Usage: npm run stop:minecraft -- <server-name>' && echo 'Example: npm run stop:minecraft -- server-test'",
     "logs:minecraft": "echo 'Usage: npm run logs:minecraft -- <server-name>' && echo 'Example: npm run logs:minecraft -- server-test'",
-    "setup": "echo 'Setup guide:' && echo '1. Copy .env.example to .env in each stack' && echo '2. Fill in required secrets' && echo '3. Create config and data directories' && echo '4. Run: npm run start:all'",
     "down": "npm run stop:all"
   },
   "keywords": [

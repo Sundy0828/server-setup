@@ -13,6 +13,7 @@ This setup is split into independent stacks:
 **Start entire ecosystem:**
 
 ```bash
+npm run setup
 npm run start:all
 ```
 

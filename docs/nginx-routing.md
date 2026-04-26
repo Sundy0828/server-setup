@@ -18,7 +18,7 @@ Using `.home.lab` domains for internal access:
 
 | Domain               | Service       | Container Port  |
 | -------------------- | ------------- | --------------- |
-| adguard.home.lab     | adguardhome   | 3000            |
+| adguard.home.lab     | adguardhome   | 3002            |
 | home.home.lab        | homeassistant | 8123            |
 | plex.home.lab        | plex          | 32400           |
 | sonarr.home.lab      | sonarr        | 8989            |
@@ -29,6 +29,7 @@ Using `.home.lab` domains for internal access:
 | qbittorrent.home.lab | qbittorrent   | 8080            |
 | overseerr.home.lab   | overseerr     | 5055 (internal) |
 | minecraft.home.lab   | minecraft     | 25565 (tcp)     |
+| dashboard.home.lab   | homepage      | 3000            |
 
 ---
 

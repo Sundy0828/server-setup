@@ -1,0 +1,107 @@
+---
+# Infrastructure Services
+- Infrastructure:
+    - Nginx Proxy Manager:
+        icon: nginx
+        description: Reverse proxy & SSL management
+        href: http://localhost:81/
+        widget:
+          type: iframe
+          url: http://nginx-pm:81/
+    - Portainer:
+        icon: portainer
+        description: Docker container management
+        href: http://localhost:9000/
+    - Uptime Kuma:
+        icon: uptimekuma
+        description: Uptime monitoring & status
+        href: http://localhost:3001/
+    - Duplicati:
+        icon: duplicati
+        description: Backup solution
+        href: http://localhost:8200/
+
+# DNS & Adblocking
+- Adblocking:
+    - AdGuard Home:
+        icon: adguardhome
+        description: Network-wide ad blocking & DNS
+        href: http://localhost:8081/admin/
+        widget:
+          type: adguardhome
+          url: http://adguardhome:80
+
+# Smart Home
+- Smart Home:
+    - Home Assistant:
+        icon: homeassistant
+        description: Home automation platform
+        href: http://localhost:8123/
+        widget:
+          type: iframe
+          url: http://homeassistant:8123/
+
+# Media Management & Entertainment
+- Media Acquisition:
+    - Sonarr:
+        icon: sonarr
+        description: TV series download automation
+        href: http://localhost:8989/
+        widget:
+          type: sonarr
+          url: http://sonarr:8989
+          key: ${SONARR_API_KEY}
+    - Radarr:
+        icon: radarr
+        description: Movie download automation
+        href: http://localhost:7878/
+        widget:
+          type: radarr
+          url: http://radarr:7878
+          key: ${RADARR_API_KEY}
+    - Lidarr:
+        icon: lidarr
+        description: Music download automation
+        href: http://localhost:8686/
+        widget:
+          type: lidarr
+          url: http://lidarr:8686
+          key: ${LIDARR_API_KEY}
+    - Readarr:
+        icon: readarr
+        description: Book download automation
+        href: http://localhost:8787/
+
+- Media Indexing & Organization:
+    - Prowlarr:
+        icon: prowlarr
+        description: Indexer manager for *arr apps
+        href: http://localhost:9696/
+    - Bazarr:
+        icon: bazarr
+        description: Subtitle management
+        href: http://localhost:6767/
+    - FlareSolverr:
+        icon: flaresolverr
+        description: Cloudflare bypass for indexers
+        href: http://localhost:8191/
+
+- Media Download:
+    - qBittorrent:
+        icon: qbittorrent
+        description: Torrent client (via Gluetun VPN)
+        href: http://localhost:8080/
+    - Overseerr:
+        icon: overseerr
+        description: Media request management
+        href: http://localhost:3000/
+
+- Media Playback:
+    - Plex:
+        icon: plex
+        description: Media streaming server
+        href: http://localhost:32400/web
+        widget:
+          type: plex
+          url: http://plex:32400
+          key: ${PLEX_API_KEY}
