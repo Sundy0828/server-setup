@@ -14,21 +14,21 @@ NGINX Proxy Manager handles:
 
 ## Base Domain Strategy
 
-Using `.local` domains for internal access:
+Using `.home.lab` domains for internal access:
 
-| Domain            | Service       | Container Port  |
-| ----------------- | ------------- | --------------- |
-| adguard.local     | adguardhome   | 3000            |
-| home.local        | homeassistant | 8123            |
-| plex.local        | plex          | 32400           |
-| sonarr.local      | sonarr        | 8989            |
-| radarr.local      | radarr        | 7878            |
-| lidarr.local      | lidarr        | 8686            |
-| bazarr.local      | bazarr        | 6767            |
-| prowlarr.local    | prowlarr      | 9696            |
-| qbittorrent.local | qbittorrent   | 8080            |
-| overseerr.local   | overseerr     | 5055 (internal) |
-| minecraft.local   | minecraft     | 25565 (tcp)     |
+| Domain               | Service       | Container Port  |
+| -------------------- | ------------- | --------------- |
+| adguard.home.lab     | adguardhome   | 3000            |
+| home.home.lab        | homeassistant | 8123            |
+| plex.home.lab        | plex          | 32400           |
+| sonarr.home.lab      | sonarr        | 8989            |
+| radarr.home.lab      | radarr        | 7878            |
+| lidarr.home.lab      | lidarr        | 8686            |
+| bazarr.home.lab      | bazarr        | 6767            |
+| prowlarr.home.lab    | prowlarr      | 9696            |
+| qbittorrent.home.lab | qbittorrent   | 8080            |
+| overseerr.home.lab   | overseerr     | 5055 (internal) |
+| minecraft.home.lab   | minecraft     | 25565 (tcp)     |
 
 ---
 
@@ -45,17 +45,17 @@ Using `.local` domains for internal access:
 ## Access Rules
 
 - Internal only:
-  - adguard.local
-  - home.local
+  - adguard.home.lab
+  - home.home.lab
 
 - Internal + remote (via Tailscale or future exposure):
-  - overseerr.local
-  - plex.local
+  - overseerr.home.lab
+  - plex.home.lab
 
 ---
 
 ## Future
 
 - Add SSL via NGINX Proxy Manager
-- Possibly move from `.local` to a real domain
+- Possibly move from `.home.lab` to a real domain
 - Add authentication layer for sensitive services

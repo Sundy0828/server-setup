@@ -11,6 +11,13 @@
 - homeassistant
 - Port: 8123
 
+## Infra
+
+- Portainer (9000)
+- Uptime Kuma (3001)
+- Duplicati (8200)
+- NGINX (81)
+
 ## Media Stack
 
 - plex (32400)
@@ -29,5 +36,4 @@
 
 ## Networking
 
-- nginx (planned)
 - tailscale (remote access)
