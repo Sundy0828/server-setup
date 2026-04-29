@@ -200,7 +200,7 @@ From `adblock-stack`:
 2. Start:
    - `docker compose -f compose.yml up -d`
 3. First-run setup wizard:
-   - `http://localhost:3000`
+   - `http://localhost:3002`
 4. Admin UI (after setup):
    - `http://localhost:8081`
 

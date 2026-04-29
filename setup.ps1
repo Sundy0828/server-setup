@@ -11,12 +11,12 @@ Write-Host "🏠 Initializing Homelab Environment..." -ForegroundColor Cyan
 Write-Host "`n📡 Setting up Docker network..." -ForegroundColor Yellow
 $networkExists = docker network ls --filter name=homelab --quiet
 if ($networkExists) {
-    Write-Host "✓ Network 'homelab' already exists" -ForegroundColor Green
+    Write-Host "OK Network 'homelab' already exists" -ForegroundColor Green
 } else {
     Write-Host "Creating network 'homelab'..." -ForegroundColor Gray
     docker network create homelab
     if ($LASTEXITCODE -eq 0) {
-        Write-Host "✓ Network 'homelab' created" -ForegroundColor Green
+        Write-Host "OK Network 'homelab' created" -ForegroundColor Green
     } else {
         Write-Host "✗ Failed to create network" -ForegroundColor Red
         exit 1
@@ -32,7 +32,7 @@ if (Test-Path $homepageExampleDir) {
     # Create runtime directory if it doesn't exist
     if (!(Test-Path $homepageRuntimeDir)) {
         New-Item -ItemType Directory -Path $homepageRuntimeDir -Force | Out-Null
-        Write-Host "✓ Created Homepage config directory" -ForegroundColor Green
+        Write-Host "OK Created Homepage config directory" -ForegroundColor Green
     }
     
     # Copy files if not already there or if Force flag is set
@@ -41,17 +41,17 @@ if (Test-Path $homepageExampleDir) {
         $targetPath = Join-Path $homepageRuntimeDir $file.Name
         if (!(Test-Path $targetPath) -or $Force) {
             Copy-Item -Path $file.FullName -Destination $targetPath -Force
-            Write-Host "✓ Copied $($file.Name)" -ForegroundColor Green
+            Write-Host "OK Copied $($file.Name)" -ForegroundColor Green
         } else {
             Write-Host "⊘ $($file.Name) already exists (use -Force to overwrite)" -ForegroundColor Cyan
         }
     }
 } else {
-    Write-Host "⚠ Example config not found at $homepageExampleDir" -ForegroundColor Yellow
+    Write-Host "WARNING Example config not found at $homepageExampleDir" -ForegroundColor Yellow
 }
 
-Write-Host "`n✓ Setup complete!" -ForegroundColor Green
+Write-Host "`n[OK] Setup complete!" -ForegroundColor Green
 Write-Host "`nNext steps:" -ForegroundColor Cyan
-Write-Host "  • Fill in .env files with your configuration"
-Write-Host "  • Run 'npm run start:all' to start all services"
-Write-Host "  • Access Homepage at http://localhost:3000"
+Write-Host "  * Fill in .env files with your configuration"
+Write-Host "  * Run 'npm run start:all' to start all services"
+Write-Host "  * Access Homepage at http://localhost:3000"

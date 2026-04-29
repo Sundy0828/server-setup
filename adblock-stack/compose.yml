@@ -6,7 +6,8 @@ services:
       - "53:53/tcp"
       - "53:53/udp"
       - "3002:3000/tcp"
-      - "8081:80/tcp"
+      - "8081:8081/tcp"
+      - "8081:8081"
     environment:
       - TZ=${TZ:-America/New_York}
     volumes:
@@ -17,6 +18,5 @@ services:
     restart: unless-stopped
 
 networks:
-  default:
-    name: homelab
+  homelab:
     external: true

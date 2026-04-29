@@ -115,8 +115,7 @@ services:
     restart: unless-stopped
 
 networks:
-  default:
-    name: homelab
+  homelab:
     external: true
 
 volumes:

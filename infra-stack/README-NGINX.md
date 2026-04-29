@@ -18,14 +18,14 @@ Access the admin UI and add these proxy hosts (Proxy Hosts menu):
 
 ### Ad Blocking
 
-- **Domain Names**: `adguard.local`
+- **Domain Names**: `adguard.home.lab`
 - **Forward Host**: `adguardhome`
 - **Forward Port**: `3000`
 - **Cache Assets**: OFF
 
 ### Home Automation
 
-- **Domain Names**: `home.local`
+- **Domain Names**: `home.home.lab`
 - **Forward Host**: `homeassistant`
 - **Forward Port**: `8123`
 - **WebSocket Support**: ON (if needed)
@@ -33,63 +33,63 @@ Access the admin UI and add these proxy hosts (Proxy Hosts menu):
 
 ### Media - Plex
 
-- **Domain Names**: `plex.local`
+- **Domain Names**: `plex.home.lab`
 - **Forward Host**: `plex`
 - **Forward Port**: `32400`
 - **Cache Assets**: OFF
 
 ### Media - Sonarr
 
-- **Domain Names**: `sonarr.local`
+- **Domain Names**: `sonarr.home.lab`
 - **Forward Host**: `sonarr`
 - **Forward Port**: `8989`
 - **Cache Assets**: OFF
 
 ### Media - Radarr
 
-- **Domain Names**: `radarr.local`
+- **Domain Names**: `radarr.home.lab`
 - **Forward Host**: `radarr`
 - **Forward Port**: `7878`
 - **Cache Assets**: OFF
 
 ### Media - Lidarr
 
-- **Domain Names**: `lidarr.local`
+- **Domain Names**: `lidarr.home.lab`
 - **Forward Host**: `lidarr`
 - **Forward Port**: `8686`
 - **Cache Assets**: OFF
 
 ### Media - Bazarr
 
-- **Domain Names**: `bazarr.local`
+- **Domain Names**: `bazarr.home.lab`
 - **Forward Host**: `bazarr`
 - **Forward Port**: `6767`
 - **Cache Assets**: OFF
 
 ### Media - Prowlarr
 
-- **Domain Names**: `prowlarr.local`
+- **Domain Names**: `prowlarr.home.lab`
 - **Forward Host**: `prowlarr`
 - **Forward Port**: `9696`
 - **Cache Assets**: OFF
 
 ### Media - qBittorrent
 
-- **Domain Names**: `qbittorrent.local`
+- **Domain Names**: `qbittorrent.home.lab`
 - **Forward Host**: `qbittorrent`
 - **Forward Port**: `8080`
 - **Cache Assets**: OFF
 
 ### Media - Overseerr
 
-- **Domain Names**: `overseerr.local`
+- **Domain Names**: `overseerr.home.lab`
 - **Forward Host**: `overseerr`
 - **Forward Port**: `5055`
 - **Cache Assets**: OFF
 
 ### Minecraft
 
-- **Domain Names**: `minecraft.local`
+- **Domain Names**: `minecraft.home.lab`
 - **Forward Host**: `minecraft`
 - **Forward Port**: `25565`
 - **Protocol**: TCP (not HTTP)
@@ -99,25 +99,25 @@ Access the admin UI and add these proxy hosts (Proxy Hosts menu):
 
 ## Setup: AdGuard Home DNS Rewrites
 
-Access AdGuard Home admin UI: `http://adguard.local:3000` (or direct IP:3000)
+Access AdGuard Home admin UI: `http://adguard.home.lab:3000` (or direct IP:3000)
 
 Navigate to: **Filters** → **DNS rewrites**
 
 Add these rewrite rules:
 
-| Domain            | Answer                     |
-| ----------------- | -------------------------- |
-| adguard.local     | nginx-pm (or container IP) |
-| home.local        | nginx-pm (or container IP) |
-| plex.local        | nginx-pm (or container IP) |
-| sonarr.local      | nginx-pm (or container IP) |
-| radarr.local      | nginx-pm (or container IP) |
-| lidarr.local      | nginx-pm (or container IP) |
-| bazarr.local      | nginx-pm (or container IP) |
-| prowlarr.local    | nginx-pm (or container IP) |
-| qbittorrent.local | nginx-pm (or container IP) |
-| overseerr.local   | nginx-pm (or container IP) |
-| minecraft.local   | nginx-pm (or container IP) |
+| Domain               | Answer                     |
+| -------------------- | -------------------------- |
+| adguard.home.lab     | nginx-pm (or container IP) |
+| home.home.lab        | nginx-pm (or container IP) |
+| plex.home.lab        | nginx-pm (or container IP) |
+| sonarr.home.lab      | nginx-pm (or container IP) |
+| radarr.home.lab      | nginx-pm (or container IP) |
+| lidarr.home.lab      | nginx-pm (or container IP) |
+| bazarr.home.lab      | nginx-pm (or container IP) |
+| prowlarr.home.lab    | nginx-pm (or container IP) |
+| qbittorrent.home.lab | nginx-pm (or container IP) |
+| overseerr.home.lab   | nginx-pm (or container IP) |
+| minecraft.home.lab   | nginx-pm (or container IP) |
 
 **Or**, if you prefer to use the NGINX container IP directly:
 
@@ -144,5 +144,5 @@ MYSQL_PASSWORD=your-secure-npm-password
 
 - All services connect via the `homelab` docker network
 - NGINX Proxy Manager communicates with services using container names
-- DNS rewrites in AdGuard route `.local` domains to NGINX Proxy Manager
+- DNS rewrites in AdGuard route `.home.lab` domains to NGINX Proxy Manager
 - Default admin credentials should be changed immediately after first login
