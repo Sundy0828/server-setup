@@ -35,6 +35,8 @@ services:
       - PGID=${PGID}
       - TZ=${TZ}
       - WEBUI_PORT=8080
+    networks:
+      - homelab
     volumes:
       - ./config/qbittorrent:/config
       - ./data/downloads:/downloads

@@ -52,6 +52,8 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./data/portainer:/data
+    networks:
+      - homelab
     restart: unless-stopped
 
   # -----------------------
@@ -112,6 +114,8 @@ services:
       # - ../homeassistant-stack/config:/source/homeassistant:ro
       # - ../plex-stack/config:/source/plex:ro
       - /:/source/system:ro
+    networks:
+      - homelab
     restart: unless-stopped
 
 networks:

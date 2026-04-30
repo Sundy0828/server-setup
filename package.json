@@ -33,6 +33,7 @@
     "stop:minecraft": "echo 'Usage: npm run stop:minecraft -- <server-name>' && echo 'Example: npm run stop:minecraft -- server-test'",
     "logs:minecraft": "echo 'Usage: npm run logs:minecraft -- <server-name>' && echo 'Example: npm run logs:minecraft -- server-test'",
     "down": "npm run stop:all",
+    "ports:report": "node scripts/generate-ports.js",
     "clean": "powershell -Command \".\\clean.ps1\"",
     "clean:force": "powershell -Command \".\\clean.ps1 -Force\""
   },
@@ -45,5 +46,8 @@
     "home-assistant"
   ],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  }
 }
