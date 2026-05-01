@@ -31,8 +31,9 @@
     "stop:minecraft": "echo 'Usage: npm run stop:minecraft -- <server-name>' && echo 'Example: npm run stop:minecraft -- server-test'",
     "logs:minecraft": "echo 'Usage: npm run logs:minecraft -- <server-name>' && echo 'Example: npm run logs:minecraft -- server-test'",
     "down": "npm run stop:all",
-    "clean": "powershell -Command \".\\clean.ps1\"",
-    "clean:force": "powershell -Command \".\\clean.ps1 -Force\""
+    "clean": "powershell -ExecutionPolicy Bypass -File ./scripts/clean.ps1",
+    "clean:force": "powershell -ExecutionPolicy Bypass -File ./scripts/clean.ps1 -Force",
+    "setup:authelia": "powershell -ExecutionPolicy Bypass -File ./scripts/setup-authelia.ps1"
   },
   "keywords": [
     "docker",
