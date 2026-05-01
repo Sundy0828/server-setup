@@ -43,7 +43,7 @@ session:
 
 # Redis Storage for Sessions
 storage:
-  encryption_key: ${ENCRYPTION_KEY}
+  encryption_key: ${AUTHELIA_STORAGE_ENCRYPTION_KEY}
   local:
     path: /config/db.sqlite3
 
@@ -57,7 +57,7 @@ authentication_backend:
 
 # Access Control Rules
 access_control:
-  default_policy: deny
+  default_policy: one_factor
 
   rules:
     # Bypass rules - no authentication required
