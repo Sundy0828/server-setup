@@ -3,7 +3,7 @@
 ## Networks
 
 - default bridge
-- (future) reverse proxy network
+- reverse proxy network
 
 ## Flow
 

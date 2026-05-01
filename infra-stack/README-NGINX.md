@@ -16,11 +16,20 @@ Access admin UI: `http://localhost:81`
 
 Access the admin UI and add these proxy hosts (Proxy Hosts menu):
 
+### Authelia
+
+- **Domain Names**: authelia.home.lab
+- **Forward Host**: `authelia`
+- **Forward Port**: `9091`
+- **Forward Auth**: DISABLED
+- **Cache Assets**: OFF
+
 ### Ad Blocking
 
 - **Domain Names**: `adguard.home.lab`
 - **Forward Host**: `adguardhome`
 - **Forward Port**: `3000`
+- **Forward Auth**: authelia:9091 (/api/verify?rd=https://$host/)
 - **Cache Assets**: OFF
 
 ### Home Automation
@@ -28,6 +37,7 @@ Access the admin UI and add these proxy hosts (Proxy Hosts menu):
 - **Domain Names**: `home.home.lab`
 - **Forward Host**: `homeassistant`
 - **Forward Port**: `8123`
+- **Forward Auth**: authelia:9091 (/api/verify?rd=https://$host/)
 - **WebSocket Support**: ON (if needed)
 - **Cache Assets**: OFF
 
@@ -36,6 +46,7 @@ Access the admin UI and add these proxy hosts (Proxy Hosts menu):
 - **Domain Names**: `plex.home.lab`
 - **Forward Host**: `plex`
 - **Forward Port**: `32400`
+- **Forward Auth**: authelia:9091 (/api/verify?rd=https://$host/)
 - **Cache Assets**: OFF
 
 ### Media - Sonarr
@@ -43,6 +54,7 @@ Access the admin UI and add these proxy hosts (Proxy Hosts menu):
 - **Domain Names**: `sonarr.home.lab`
 - **Forward Host**: `sonarr`
 - **Forward Port**: `8989`
+- **Forward Auth**: authelia:9091 (/api/verify?rd=https://$host/)
 - **Cache Assets**: OFF
 
 ### Media - Radarr
@@ -50,6 +62,7 @@ Access the admin UI and add these proxy hosts (Proxy Hosts menu):
 - **Domain Names**: `radarr.home.lab`
 - **Forward Host**: `radarr`
 - **Forward Port**: `7878`
+- **Forward Auth**: authelia:9091 (/api/verify?rd=https://$host/)
 - **Cache Assets**: OFF
 
 ### Media - Lidarr
@@ -57,6 +70,7 @@ Access the admin UI and add these proxy hosts (Proxy Hosts menu):
 - **Domain Names**: `lidarr.home.lab`
 - **Forward Host**: `lidarr`
 - **Forward Port**: `8686`
+- **Forward Auth**: authelia:9091 (/api/verify?rd=https://$host/)
 - **Cache Assets**: OFF
 
 ### Media - Bazarr
@@ -64,6 +78,7 @@ Access the admin UI and add these proxy hosts (Proxy Hosts menu):
 - **Domain Names**: `bazarr.home.lab`
 - **Forward Host**: `bazarr`
 - **Forward Port**: `6767`
+- **Forward Auth**: authelia:9091 (/api/verify?rd=https://$host/)
 - **Cache Assets**: OFF
 
 ### Media - Prowlarr
@@ -71,6 +86,7 @@ Access the admin UI and add these proxy hosts (Proxy Hosts menu):
 - **Domain Names**: `prowlarr.home.lab`
 - **Forward Host**: `prowlarr`
 - **Forward Port**: `9696`
+- **Forward Auth**: authelia:9091 (/api/verify?rd=https://$host/)
 - **Cache Assets**: OFF
 
 ### Media - qBittorrent
@@ -78,6 +94,7 @@ Access the admin UI and add these proxy hosts (Proxy Hosts menu):
 - **Domain Names**: `qbittorrent.home.lab`
 - **Forward Host**: `qbittorrent`
 - **Forward Port**: `8080`
+- **Forward Auth**: authelia:9091 (/api/verify?rd=https://$host/)
 - **Cache Assets**: OFF
 
 ### Media - Overseerr
@@ -85,6 +102,7 @@ Access the admin UI and add these proxy hosts (Proxy Hosts menu):
 - **Domain Names**: `overseerr.home.lab`
 - **Forward Host**: `overseerr`
 - **Forward Port**: `5055`
+- **Forward Auth**: authelia:9091 (/api/verify?rd=https://$host/)
 - **Cache Assets**: OFF
 
 ### Minecraft
