@@ -4,8 +4,6 @@
   "description": "Docker-based homelab stack management",
   "private": true,
   "scripts": {
-    "setup": "powershell -Command \".\\setup.ps1\"",
-    "setup:force": "powershell -Command \".\\setup.ps1 -Force\"",
     "network:create": "powershell -Command \"$net = docker network ls --filter name=homelab --quiet; if (-not $net) { docker network create homelab } else { Write-Host 'Network homelab already exists' }\"",
     "start:all": "npm run network:create && npm run start:adblock && npm run start:homeassistant && npm run start:plex && npm run start:infra",
     "stop:all": "npm run stop:adblock && npm run stop:homeassistant && npm run stop:plex && npm run stop:infra",
@@ -33,7 +31,6 @@
     "stop:minecraft": "echo 'Usage: npm run stop:minecraft -- <server-name>' && echo 'Example: npm run stop:minecraft -- server-test'",
     "logs:minecraft": "echo 'Usage: npm run logs:minecraft -- <server-name>' && echo 'Example: npm run logs:minecraft -- server-test'",
     "down": "npm run stop:all",
-    "ports:report": "node scripts/generate-ports.js",
     "clean": "powershell -Command \".\\clean.ps1\"",
     "clean:force": "powershell -Command \".\\clean.ps1 -Force\""
   },
