@@ -206,6 +206,36 @@ From `adblock-stack`:
 
 Set router/device DNS to your server IP to apply blocking network-wide.
 
+### Troubleshooting
+
+setup Adguard to use your machine as the dns
+
+> This will make it so you won't have wifi unless adguard is running
+
+1. Windows + R, type ncpa.cpl, and press enter.
+2. right click on wifi and go to properties
+3. double click Internet Protocol Version 4 (IPv4)
+4. switch from automatic to Use the following DNS server addresses and set the ip to computers IP
+
+may need to run these after updating
+
+```bash
+ipconfig /release
+ipconfig /renew
+ipconfig /flushdns
+netsh int ip reset
+```
+
+Note:
+
+> switch back to automatic if you want to use wifi without docker running
+
+Setup TP-Link
+
+1. Go to 192.168.0.1
+2. sign in and go to Advanced > Network > DHCP Server
+3. set primary to IP of machine hosting adgaurd
+
 ### AdGuard Home vs uBlock Origin / Brave
 
 - DNS blocking is excellent for network-wide domain blocking.
