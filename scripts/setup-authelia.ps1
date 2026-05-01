@@ -15,13 +15,14 @@ function Write-Warning { Write-Host $args -ForegroundColor Yellow }
 function Write-Error { Write-Host $args -ForegroundColor Red }
 
 $ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
-$AutheliaPath = Join-Path $ScriptRoot "infra-stack\yaml-config\authelia"
-$EnvPath = Join-Path $ScriptRoot "infra-stack\.env"
-$UsersDbPath = Join-Path $ScriptRoot "infra-stack\config\authelia\users_database.yml"
+$ProjectRoot = Split-Path -Parent $ScriptRoot
+$AutheliaPath = Join-Path $ProjectRoot "infra-stack\helper-setup\authelia"
+$EnvPath = Join-Path $ProjectRoot "infra-stack\.env"
+$UsersDbPath = Join-Path $ProjectRoot "infra-stack\config\authelia\users_database.yml"
 
-Write-Info "╔════════════════════════════════════════════════════════╗"
-Write-Info "║    Authelia Configuration Setup                        ║"
-Write-Info "╚════════════════════════════════════════════════════════╝"
+Write-Info "[====================================================]"
+Write-Info "[    Authelia Configuration Setup                    ]"
+Write-Info "[===================================================="]
 Write-Info ""
 
 # Step 1: Generate Secrets
@@ -30,7 +31,9 @@ if (-not $SkipSecrets) {
     Write-Info "Executing: generate-secrets.bat"
     Write-Info ""
     
-    $secretsOutput = & cmd /c "$AutheliaPath\generate-secrets.bat 2>&1"
+    $secretsBatPath = Join-Path $AutheliaPath "generate-secrets.bat"
+    Write-Info "Using path: $secretsBatPath"
+    $secretsOutput = & cmd /c "`"$secretsBatPath`"" 2>&1
     
     Write-Info "Generated secrets output:"
     Write-Info $secretsOutput
@@ -42,15 +45,25 @@ if (-not $SkipSecrets) {
     $encryptionKey = $null
     
     $lines = $secretsOutput -split "`n"
-    foreach ($line in $lines) {
-        if ($line -match "JWT_SECRET.*=\s*(.+)") {
-            $jwtSecret = $matches[1].Trim()
+    for ($i = 0; $i -lt $lines.Length; $i++) {
+        $line = $lines[$i]
+        if ($line -match "JWT_SECRET") {
+            # Secret value is on the next line
+            if ($i + 1 -lt $lines.Length) {
+                $jwtSecret = $lines[$i + 1].Trim()
+            }
         }
-        elseif ($line -match "SESSION_SECRET.*=\s*(.+)") {
-            $sessionSecret = $matches[1].Trim()
+        elseif ($line -match "SESSION_SECRET") {
+            # Secret value is on the next line
+            if ($i + 1 -lt $lines.Length) {
+                $sessionSecret = $lines[$i + 1].Trim()
+            }
         }
-        elseif ($line -match "ENCRYPTION_KEY.*=\s*(.+)") {
-            $encryptionKey = $matches[1].Trim()
+        elseif ($line -match "STORAGE_ENCRYPTION_KEY") {
+            # Secret value is on the next line
+            if ($i + 1 -lt $lines.Length) {
+                $encryptionKey = $lines[$i + 1].Trim()
+            }
         }
     }
     
@@ -87,7 +100,7 @@ if (-not $SkipSecrets) {
     }
     
     $envContent | Set-Content $EnvPath
-    Write-Success "✓ .env file updated with secrets"
+    Write-Success '[OK] .env file updated with secrets'
     Write-Info ""
 }
 
@@ -121,10 +134,14 @@ if (-not $SkipUsers) {
         
         # Generate hash
         Write-Info "  Generating password hash..."
-        $hashOutput = & cmd /c "$AutheliaPath\generate-hash.bat $plainPass 2>&1"
+        $hashBatPath = Join-Path $AutheliaPath "generate-hash.bat"
+        $hashOutput = & cmd /c "`"$hashBatPath`" $plainPass" 2>&1
         
         # Extract hash (last line usually contains it)
         $hash = ($hashOutput -split "`n" | Where-Object { $_ -match '\$argon2' } | Select-Object -Last 1).Trim()
+        
+        # Remove "Digest: " prefix if present
+        $hash = $hash -replace '^Digest:\s*', ''
         
         if (-not $hash) {
             Write-Error "Failed to generate hash for user $($user.Username)"
@@ -137,48 +154,46 @@ if (-not $SkipUsers) {
             Hash = $hash
         }
         
-        Write-Success "  ✓ Password hash generated"
+        Write-Success '  [OK] Password hash generated'
         Write-Info ""
     }
     
     # Update users_database.yml
     Write-Info "Updating users_database.yml..."
     
-    $usersYaml = @"
-###############################################################################
-#                           Users Database                                    #
-###############################################################################
-
-users:
-"@
+    $usersYaml = "###############################################################################`r`n"
+    $usersYaml += "#                           Users Database                                    #`r`n"
+    $usersYaml += "###############################################################################`r`n`r`n"
+    $usersYaml += "users:`r`n"
     
     foreach ($username in $userHashes.Keys) {
         $user = $userHashes[$username]
-        $usersYaml += @"
-
-
-  $username :
-    displayname : `"$($user.DisplayName)`"
-    password : `"$($user.Hash)`"
-    email : $($user.Email)
-    groups:
-      - users
-"@
+        $displayName = $user.DisplayName
+        $hash = $user.Hash
+        $email = $user.Email
+        
+        $usersYaml += "`r`n"
+        $usersYaml += "  $username :`r`n"
+        $usersYaml += "    displayname : `"$displayName`"`r`n"
+        $usersYaml += "    password : `"$hash`"`r`n"
+        $usersYaml += "    email : $email`r`n"
+        $usersYaml += "    groups:`r`n"
+        $usersYaml += "      - users`r`n"
     }
     
     $usersYaml | Set-Content $UsersDbPath
-    Write-Success "✓ users_database.yml updated"
+    Write-Success '[OK] users_database.yml updated'
     Write-Info ""
 }
 
 # Summary
-Write-Info "╔════════════════════════════════════════════════════════╗"
-Write-Success "║    Setup Complete!                                   ║"
-Write-Info "╚════════════════════════════════════════════════════════╝"
+Write-Info "[===================================================="]
+Write-Success "[    Setup Complete!                                  ]"
+Write-Info "[===================================================="]
 Write-Info ""
 
 if (-not $SkipSecrets) {
-    Write-Success "✓ Secrets generated and added to infra-stack\.env"
+    Write-Success '[OK] Secrets generated and added to infra-stack\.env'
     Write-Info "  - AUTHELIA_JWT_SECRET"
     Write-Info "  - AUTHELIA_SESSION_SECRET"
     Write-Info "  - AUTHELIA_STORAGE_ENCRYPTION_KEY"
@@ -186,15 +201,14 @@ if (-not $SkipSecrets) {
 }
 
 if (-not $SkipUsers) {
-    Write-Success "✓ User passwords hashed and added to users_database.yml"
+    Write-Success '[OK] User passwords hashed and added to users_database.yml'
     Write-Info "  - admin"
     Write-Info "  - reg"
     Write-Info ""
 }
 
-Write-Info "📋 Next Steps:"
-Write-Info "  1. Update authelia.yml domain: yourdomain.com → your-domain.com"
-Write-Info "  2. Run: npm run setup"
+Write-Info "[NEXT] Next Steps:"
+Write-Info "  1. Update authelia.yml domain: home.lab -> your-domain.com"
 Write-Info "  3. Run: npm run start:all"
 Write-Info "  4. Configure Nginx Proxy Manager"
 Write-Info ""

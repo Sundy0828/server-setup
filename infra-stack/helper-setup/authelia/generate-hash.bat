@@ -16,12 +16,11 @@ if "%1"=="" (
     echo   generate-hash.bat "MySecurePassword123!"
     echo.
     echo Or use Docker directly:
-    echo   docker run --rm authelia/authelia:latest authelia hash-password "MySecurePassword123!"
-    exit /b 1
+    echo   docker run --rm authelia/authelia:latest authelia hash-password "MySecurePassword123!"    echo.    exit /b 1
 )
 
 REM Generate hash using Docker
-docker run --rm authelia/authelia:latest authelia hash-password "%1"
+docker run --rm authelia/authelia:latest authelia crypto hash generate --password "%1"
 
 echo.
 echo Copy the hash output above into users_database.yml
