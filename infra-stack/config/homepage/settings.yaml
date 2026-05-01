@@ -1,0 +1,44 @@
+---
+# Homepage settings
+title: Homelab Dashboard
+subtitle: Server Management & Media Center
+logo: logo.png
+icon: mdi-home-automation
+
+# Header
+header: true
+footer: true
+
+# Theme
+theme: dark
+color: blue
+headerStyle: underlined
+
+# Layout
+layout:
+  Infrastructure:
+    columns: 3
+  Adblocking:
+    columns: 2
+  "Smart Home":
+    columns: 2
+  "Media Acquisition":
+    columns: 3
+  "Media Indexing & Organization":
+    columns: 3
+  "Media Download":
+    columns: 2
+  "Media Playback":
+    columns: 2
+
+# Shortcuts
+shortcuts:
+  - - title: GitHub
+      href: https://github.com
+    - title: Documentation
+      href: https://docs.example.com
+
+# Search
+search:
+  provider: google
+  target: _blank
