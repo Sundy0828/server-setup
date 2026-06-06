@@ -3,7 +3,8 @@
 
 param(
     [switch]$SkipSecrets,
-    [switch]$SkipUsers
+    [switch]$SkipUsers,
+    [string]$Domain = "home.lab"
 )
 
 $ErrorActionPreference = "Stop"
@@ -18,11 +19,37 @@ $ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ProjectRoot = Split-Path -Parent $ScriptRoot
 $AutheliaPath = Join-Path $ProjectRoot "infra-stack\helper-setup\authelia"
 $EnvPath = Join-Path $ProjectRoot "infra-stack\.env"
-$UsersDbPath = Join-Path $ProjectRoot "infra-stack\config\authelia\users_database.yml"
+$ConfigDir = Join-Path $ProjectRoot "infra-stack\config\authelia"
+$UsersDbPath = Join-Path $ConfigDir "users_database.yml"
+$ConfigPath = Join-Path $ConfigDir "configuration.yml"
+$TemplateDir = Join-Path $ProjectRoot "infra-stack\templates\authelia"
 
 Write-Info "[====================================================]"
 Write-Info "[    Authelia Configuration Setup                    ]"
 Write-Info "[===================================================="]
+Write-Info "Domain: $Domain"
+Write-Info ""
+
+if (-not (Test-Path $ConfigDir)) {
+    New-Item -ItemType Directory -Path $ConfigDir -Force | Out-Null
+}
+
+if (-not (Test-Path $ConfigPath) -and (Test-Path (Join-Path $TemplateDir "configuration.yml.example"))) {
+    $template = Get-Content (Join-Path $TemplateDir "configuration.yml.example") -Raw
+    $template.Replace("{{DOMAIN}}", $Domain) | Set-Content $ConfigPath -NoNewline
+    Write-Success '[OK] Created configuration.yml from template'
+}
+
+if (-not (Test-Path $UsersDbPath) -and (Test-Path (Join-Path $TemplateDir "users_database.yml.example"))) {
+    Copy-Item (Join-Path $TemplateDir "users_database.yml.example") $UsersDbPath
+    Write-Success '[OK] Created users_database.yml from template'
+}
+
+$notifyPath = Join-Path $ConfigDir "notification.txt"
+if (-not (Test-Path $notifyPath)) {
+    "" | Set-Content $notifyPath
+}
+
 Write-Info ""
 
 # Step 1: Generate Secrets
@@ -208,9 +235,9 @@ if (-not $SkipUsers) {
 }
 
 Write-Info "[NEXT] Next Steps:"
-Write-Info "  1. Update authelia.yml domain: home.lab -> your-domain.com"
-Write-Info "  3. Run: npm run start:all"
-Write-Info "  4. Configure Nginx Proxy Manager"
+Write-Info "  1. Run full bootstrap: npm run setup"
+Write-Info "  2. Or start stacks:    npm run start:all"
+Write-Info "  3. Configure NPM/DNS:   npm run setup:nginx && npm run setup:dns"
 Write-Info ""
 
 Write-Success "Done!"

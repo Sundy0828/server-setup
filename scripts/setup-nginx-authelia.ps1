@@ -1,5 +1,6 @@
 # Automated NGINX Proxy Manager + Authelia Setup
-# Creates proxy hosts for all services with forward authentication
+# Creates proxy hosts for all services with forward authentication.
+# Idempotent: skips hosts that already exist.
 # Usage: .\scripts\setup-nginx-authelia.ps1
 
 param(
@@ -11,7 +12,8 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-# Color output
+. "$PSScriptRoot\homelab-services.ps1"
+
 function Write-Success { Write-Host $args -ForegroundColor Green }
 function Write-Info { Write-Host $args -ForegroundColor Cyan }
 function Write-Warn { Write-Host $args -ForegroundColor Yellow }
@@ -24,27 +26,7 @@ Write-Info "Target Domain: $Domain"
 Write-Info "NGINX PM URL:  $NginxUrl"
 Write-Info ""
 
-# Services configuration: @{name, host, port, websocket, skipAuth}
-$services = @(
-    @{name="authelia"; host="authelia"; port=9091; ws=$false; skipAuth=$true}
-    @{name="homepage"; host="homepage"; port=3000; ws=$false; skipAuth=$false}
-    @{name="portainer"; host="portainer"; port=9000; ws=$false; skipAuth=$false}
-    @{name="uptime-kuma"; host="uptime-kuma"; port=3001; ws=$true; skipAuth=$false}
-    @{name="adguard"; host="adguardhome"; port=3000; ws=$false; skipAuth=$false}
-    @{name="home"; host="homeassistant"; port=8123; ws=$true; skipAuth=$false}
-    @{name="plex"; host="plex"; port=32400; ws=$false; skipAuth=$false}
-    @{name="sonarr"; host="sonarr"; port=8989; ws=$false; skipAuth=$false}
-    @{name="radarr"; host="radarr"; port=7878; ws=$false; skipAuth=$false}
-    @{name="lidarr"; host="lidarr"; port=8686; ws=$false; skipAuth=$false}
-    @{name="bazarr"; host="bazarr"; port=6767; ws=$false; skipAuth=$false}
-    @{name="prowlarr"; host="prowlarr"; port=9696; ws=$false; skipAuth=$false}
-    @{name="readarr"; host="readarr"; port=8787; ws=$false; skipAuth=$false}
-    @{name="qbittorrent"; host="qbittorrent"; port=8080; ws=$false; skipAuth=$false}
-    @{name="overseerr"; host="overseerr"; port=5055; ws=$false; skipAuth=$false}
-)
-
 try {
-    # Step 1: Authenticate
     Write-Info "STEP 1: Authenticating to NGINX PM..."
     $loginBody = @{
         identity = $NginxUser
@@ -58,27 +40,44 @@ try {
         -ErrorAction Stop
 
     $token = $loginResponse.token
+    $headers = @{ Authorization = "Bearer $token" }
     Write-Success "[+] Authenticated successfully"
-
-    Write-Info "STEP 2: Skipping SSL (using HTTP proxies)"
     Write-Info ""
 
-    # Step 3: Create proxy hosts
+    Write-Info "STEP 2: Loading existing proxy hosts..."
+    $existingHosts = @(Invoke-RestMethod -Uri "$NginxUrl/api/nginx/proxy-hosts" `
+        -Headers $headers -Method Get -ErrorAction Stop)
+
+    $existingDomains = @{}
+    foreach ($host in $existingHosts) {
+        foreach ($name in $host.domain_names) {
+            $existingDomains[$name.ToLower()] = $host
+        }
+    }
+    Write-Info "[+] Found $($existingHosts.Count) existing proxy host(s)"
+    Write-Info ""
+
     Write-Info "STEP 3: Creating proxy hosts..."
     Write-Info "============================================"
     Write-Info ""
 
     $successCount = 0
+    $skipCount = 0
     $failCount = 0
 
-    foreach ($service in $services) {
+    foreach ($service in $script:HomelabServices) {
         $domainName = "$($service.name).$Domain"
         $useAuth = -not $service.skipAuth
-        
+
         Write-Info ">> $($service.name)" -NoNewline
 
+        if ($existingDomains.ContainsKey($domainName.ToLower())) {
+            Write-Warn " [=] (already exists)"
+            $skipCount++
+            continue
+        }
+
         try {
-            # Create proxy host (HTTP, no SSL)
             $proxyHostBody = @{
                 domain_names = @($domainName)
                 forward_scheme = "http"
@@ -93,7 +92,7 @@ try {
             } | ConvertTo-Json
 
             $proxyResponse = Invoke-RestMethod -Uri "$NginxUrl/api/nginx/proxy-hosts" `
-                -Headers @{Authorization = "Bearer $token"} `
+                -Headers $headers `
                 -Method Post `
                 -Body $proxyHostBody `
                 -ContentType "application/json" `
@@ -101,7 +100,6 @@ try {
 
             $proxyId = $proxyResponse.id
 
-            # Add Authelia forward auth if needed
             if ($useAuth) {
                 $authLocationBody = @{
                     path = "/"
@@ -109,13 +107,13 @@ try {
                     forward_host = "authelia"
                     forward_port = 9091
                     auth_forward = $true
-                    auth_forward_uri = "/api/verify?rd=https://`$host/"
+                    auth_forward_uri = "/api/verify?rd=http://`$host/"
                     custom_nginx_upstream = ""
                     custom_nginx_location = "auth_request_set `$remote_user `$upstream_http_remote_user;`nauth_request_set `$remote_groups `$upstream_http_remote_groups;`nauth_request_set `$remote_name `$upstream_http_remote_name;`nauth_request_set `$remote_email `$upstream_http_remote_email;"
                 } | ConvertTo-Json
 
                 Invoke-RestMethod -Uri "$NginxUrl/api/nginx/proxy-hosts/$proxyId/locations" `
-                    -Headers @{Authorization = "Bearer $token"} `
+                    -Headers $headers `
                     -Method Post `
                     -Body $authLocationBody `
                     -ContentType "application/json" `
@@ -138,22 +136,20 @@ try {
     Write-Info "============================================"
     Write-Info "RESULTS:"
     Write-Success "  [+] Created: $successCount"
+    if ($skipCount -gt 0) {
+        Write-Warn "  [=] Skipped: $skipCount"
+    }
     if ($failCount -gt 0) {
         Write-Err "  [-] Failed:  $failCount"
     }
 
     Write-Info ""
-    Write-Success "[+] Setup complete!"
+    Write-Success "[+] NPM setup complete!"
     Write-Info ""
-    Write-Info "Next steps:"
-    Write-Info "1. Access NGINX PM at: $NginxUrl"
-    Write-Info "2. Verify proxy hosts are created"
-    Write-Info "3. Access your services at: http://<service>.$Domain"
-    Write-Info ""
-    Write-Info "Example URLs:"
-    Write-Info "  - http://homepage.$Domain"
-    Write-Info "  - http://portainer.$Domain"
-    Write-Info "  - http://sonarr.$Domain"
+    Write-Info "Access services at: http://<service>.$Domain"
+    Write-Info "  http://sonarr.$Domain"
+    Write-Info "  http://plex.$Domain"
+    Write-Info "  http://authelia.$Domain"
 
 } catch {
     Write-Err "[-] Setup failed: $($_.Exception.Message)"

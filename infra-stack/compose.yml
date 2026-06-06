@@ -39,24 +39,6 @@ services:
     restart: unless-stopped
 
   # -----------------------
-  # 📦 Container Management
-  # -----------------------
-  portainer:
-    image: portainer/portainer-ce:alpine-sts
-    container_name: portainer
-    ports:
-      - "8000:8000"
-      - "9000:9000"
-    environment:
-      - TZ=${TZ:-America/New_York}
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./data/portainer:/data
-    networks:
-      - homelab
-    restart: unless-stopped
-
-  # -----------------------
   # 🏠 Homepage Dashboard
   # -----------------------
   homepage:
