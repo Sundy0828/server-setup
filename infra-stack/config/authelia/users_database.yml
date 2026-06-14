@@ -6,14 +6,14 @@ users:
 
   admin :
     displayname : "Administrator"
-    password : "$argon2id$v=19$m=65536,t=3,p=4$wy1eOesPPHveEDwd0w+jwQ$4j3qD+rCI/YCOZSFj2Ul7RVE8dQKCiDeDIQqnQplQu0"
+    password : "$argon2id$v=19$m=65536,t=3,p=4$m885eAKCb9CRporYgPhQ6A$WJ+Mb7ww7qsV+wCZvWvNK/egQKrYsGFZnrHuuPw+bdo"
     email : admin@yourdomain.com
     groups:
       - users
 
   reg :
     displayname : "Regular User"
-    password : "$argon2id$v=19$m=65536,t=3,p=4$+47UBWSTVS0bAGdQO4NC0g$AQw372iyrfcn5xRp88coNVCvW/BbmwtkPRErc4hr5V0"
+    password : "$argon2id$v=19$m=65536,t=3,p=4$kSYCykLbyOrnX6hdX+XOkQ$H3lt75XnOey2TJvFLDpObNxoSwmmAG9qUS/jYOGjDzU"
     email : user@yourdomain.com
     groups:
       - users

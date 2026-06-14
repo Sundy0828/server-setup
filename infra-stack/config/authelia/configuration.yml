@@ -25,21 +25,21 @@ log:
   file_path: ""
 
 # Default Redirection URL (after successful authentication)
-default_redirection_url: https://homepage.yourdomain.com
+default_redirection_url: https://homepage.home.lab
 
 # Session Configuration (using Redis)
 session:
   name: authelia_session
-  domain: yourdomain.com
+  domain: home.lab
   same_site: lax
   expiration: 1h
   inactivity: 15m
   remember_me: 1M
   cookies:
     - name: authelia_session
-      domain: yourdomain.com
-      authelia_url: https://authelia.yourdomain.com
-      default_redirection_url: https://homepage.yourdomain.com
+      domain: home.lab
+      authelia_url: https://authelia.home.lab
+      default_redirection_url: https://homepage.home.lab
 
 # Redis Storage for Sessions
 storage:
@@ -62,46 +62,46 @@ access_control:
   rules:
     # Bypass rules - no authentication required
     - domain:
-        - "yourdomain.com"
+        - "home.lab"
       path: "^/api/.*"
       policy: bypass
 
     # Auth Portal - accessible to all
     - domain:
-        - "authelia.yourdomain.com"
+        - "authelia.home.lab"
       policy: bypass
 
     # Public services - no auth required (optional, adjust as needed)
     # - domain:
-    #     - "status.yourdomain.com"
+    #     - "status.home.lab"
     #   policy: bypass
 
     # Protected services - one_factor (password only, or TOTP if enabled)
     - domain:
-        - "homepage.yourdomain.com"
-        - "portainer.yourdomain.com"
-        - "uptime-kuma.yourdomain.com"
-        - "adguardhome.yourdomain.com"
-        - "homeassistant.yourdomain.com"
-        - "duplicati.yourdomain.com"
-        - "sonarr.yourdomain.com"
-        - "radarr.yourdomain.com"
-        - "lidarr.yourdomain.com"
-        - "readarr.yourdomain.com"
-        - "prowlarr.yourdomain.com"
-        - "bazarr.yourdomain.com"
-        - "overseerr.yourdomain.com"
-        - "minecraft.yourdomain.com"
-        - "plex.yourdomain.com"
-        - "qbittorrent.yourdomain.com"
-        - "sabnzbd.yourdomain.com"
+        - "homepage.home.lab"
+        - "portainer.home.lab"
+        - "uptime-kuma.home.lab"
+        - "adguardhome.home.lab"
+        - "homeassistant.home.lab"
+        - "duplicati.home.lab"
+        - "sonarr.home.lab"
+        - "radarr.home.lab"
+        - "lidarr.home.lab"
+        - "readarr.home.lab"
+        - "prowlarr.home.lab"
+        - "bazarr.home.lab"
+        - "overseerr.home.lab"
+        - "minecraft.home.lab"
+        - "plex.home.lab"
+        - "qbittorrent.home.lab"
+        - "sabnzbd.home.lab"
       policy: one_factor
       networks:
         - external
 
     # Admin panel - two_factor required
     - domain:
-        - "admin.yourdomain.com"
+        - "admin.home.lab"
       policy: two_factor
 
 # TOTP (Time-based One-Time Password) Configuration
@@ -130,7 +130,7 @@ totp:
 #       - revocation
 #       - introspection
 #     allowed_origins:
-#       - https://yourdomain.com
+#       - https://home.lab
 #     allowed_methods:
 #       - GET
 #       - POST
@@ -146,4 +146,4 @@ totp:
 #     - client_id: grafana
 #       client_secret: ${GRAFANA_OIDC_SECRET}
 #       redirect_uris:
-#         - https://grafana.yourdomain.com/login/generic_oauth
+#         - https://grafana.home.lab/login/generic_oauth
