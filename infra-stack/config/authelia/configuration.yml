@@ -1,149 +1,98 @@
 ---
-# Authelia Configuration for SSO
-# This configuration file provides Single Sign-On for all homelab services
+# Authelia configuration for homelab SSO (home.lab).
+# Secrets are supplied via infra-stack/.env (AUTHELIA_* environment variables).
 
-# Server Configuration
+theme: 'auto'
+
 server:
-  host: 0.0.0.0
-  port: 9091
-  path_prefix: ""
-  asset_path: ""
-  enable_pprof: false
-  enable_expvars: false
-  buffers:
-    read: 4096
-    write: 4096
-  timeouts:
-    read: 6s
-    write: 6s
-    idle: 30s
+  address: 'tcp://0.0.0.0:9091/'
+  tls:
+    key: '/config/certs/tls.key'
+    certificate: '/config/certs/tls.crt'
 
-# Logging Configuration
 log:
-  level: info
-  format: json
-  file_path: ""
+  level: 'info'
 
-# Default Redirection URL (after successful authentication)
-default_redirection_url: https://homepage.home.lab
+identity_validation:
+  reset_password:
+    jwt_secret: 'placeholder_overridden_by_env'
 
-# Session Configuration (using Redis)
+authentication_backend:
+  file:
+    path: /config/users_database.yml
+    password:
+      algorithm: 'argon2'
+      iterations: 3
+      key_length: 32
+      salt_length: 16
+      memory: 65536
+      parallelism: 4
+
+access_control:
+  default_policy: 'deny'
+  rules:
+    # Direct local access during setup (before DNS/NPM)
+    - domain:
+        - 'localhost'
+        - '127.0.0.1'
+      policy: 'bypass'
+
+    # Login portal — never require forward-auth on itself
+    - domain: 'authelia.home.lab'
+      policy: 'bypass'
+
+    # Protected homelab services (password only; enable two_factor per-domain if desired)
+    - domain:
+        - 'homepage.home.lab'
+        - 'portainer.home.lab'
+        - 'uptime-kuma.home.lab'
+        - 'adguardhome.home.lab'
+        - 'homeassistant.home.lab'
+        - 'duplicati.home.lab'
+        - 'sonarr.home.lab'
+        - 'radarr.home.lab'
+        - 'lidarr.home.lab'
+        - 'readarr.home.lab'
+        - 'prowlarr.home.lab'
+        - 'bazarr.home.lab'
+        - 'overseerr.home.lab'
+        - 'minecraft.home.lab'
+        - 'plex.home.lab'
+        - 'qbittorrent.home.lab'
+        - 'sabnzbd.home.lab'
+      policy: 'one_factor'
+
+    - domain: 'admin.home.lab'
+      policy: 'two_factor'
+
 session:
-  name: authelia_session
-  domain: home.lab
-  same_site: lax
-  expiration: 1h
-  inactivity: 15m
-  remember_me: 1M
   cookies:
-    - name: authelia_session
-      domain: home.lab
-      authelia_url: https://authelia.home.lab
-      default_redirection_url: https://homepage.home.lab
+    # Primary — use with hosts entry: 127.0.0.1 authelia.home.lab
+    # Direct: https://authelia.home.lab:9091
+    # Via NPM later: change authelia_url to https://authelia.home.lab (no port)
+    - domain: 'home.lab'
+      authelia_url: 'https://authelia.home.lab:9091'
+      default_redirection_url: 'https://homepage.home.lab:3000'
+    # Fallback — direct IP access: https://127.0.0.1:9091
+    - domain: '127.0.0.1'
+      authelia_url: 'https://127.0.0.1:9091'
+      default_redirection_url: 'https://127.0.0.1:3000'
+  expiration: '1h'
+  inactivity: '15m'
+  redis:
+    host: 'redis'
+    port: 6379
 
-# Redis Storage for Sessions
 storage:
-  encryption_key: ${AUTHELIA_STORAGE_ENCRYPTION_KEY}
+  encryption_key: 'placeholder_overridden_by_env'
   local:
     path: /config/db.sqlite3
 
-# Authentication Backend (Local database)
-authentication_backend:
-  password_reset:
-    disable: false
-    custom_url: ""
-  file:
-    path: /config/users_database.yml
+notifier:
+  filesystem:
+    filename: /config/notification.txt
 
-# Access Control Rules
-access_control:
-  default_policy: one_factor
-
-  rules:
-    # Bypass rules - no authentication required
-    - domain:
-        - "home.lab"
-      path: "^/api/.*"
-      policy: bypass
-
-    # Auth Portal - accessible to all
-    - domain:
-        - "authelia.home.lab"
-      policy: bypass
-
-    # Public services - no auth required (optional, adjust as needed)
-    # - domain:
-    #     - "status.home.lab"
-    #   policy: bypass
-
-    # Protected services - one_factor (password only, or TOTP if enabled)
-    - domain:
-        - "homepage.home.lab"
-        - "portainer.home.lab"
-        - "uptime-kuma.home.lab"
-        - "adguardhome.home.lab"
-        - "homeassistant.home.lab"
-        - "duplicati.home.lab"
-        - "sonarr.home.lab"
-        - "radarr.home.lab"
-        - "lidarr.home.lab"
-        - "readarr.home.lab"
-        - "prowlarr.home.lab"
-        - "bazarr.home.lab"
-        - "overseerr.home.lab"
-        - "minecraft.home.lab"
-        - "plex.home.lab"
-        - "qbittorrent.home.lab"
-        - "sabnzbd.home.lab"
-      policy: one_factor
-      networks:
-        - external
-
-    # Admin panel - two_factor required
-    - domain:
-        - "admin.home.lab"
-      policy: two_factor
-
-# TOTP (Time-based One-Time Password) Configuration
 totp:
-  disable: false
-  issuer: Homelab
-  algorithm: sha1
-  digits: 6
+  issuer: 'home.lab'
   period: 30
   skew: 1
-
-# OIDC (OpenID Connect) Configuration - optional for more advanced SSO scenarios
-# oidc:
-#   hmac_secret: ${OIDC_HMAC_SECRET}
-#   issuer_private_key: ${OIDC_ISSUER_PRIVATE_KEY}
-#   access_token_lifespan: 1h
-#   authorize_code_lifespan: 1m
-#   id_token_lifespan: 1h
-#   refresh_token_lifespan: 90d
-#   enable_client_debug_messages: false
-#   enforce_pkce: public_clients_only
-#   cors:
-#     endpoints:
-#       - authorization
-#       - token
-#       - revocation
-#       - introspection
-#     allowed_origins:
-#       - https://home.lab
-#     allowed_methods:
-#       - GET
-#       - POST
-#     allowed_headers:
-#       - Content-Type
-#       - Authorization
-#     expose_headers:
-#       - Content-Type
-#     credentials_include_credentials: true
-#     options_cors_credentials_include_credentials: true
-#     max_age: 1728000
-#   clients:
-#     - client_id: grafana
-#       client_secret: ${GRAFANA_OIDC_SECRET}
-#       redirect_uris:
-#         - https://grafana.home.lab/login/generic_oauth

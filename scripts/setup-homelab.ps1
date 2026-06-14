@@ -6,6 +6,7 @@ param(
     [string]$Domain = "home.lab",
     [string]$NginxUrl = "http://localhost:81",
     [string]$AdGuardUrl = "http://localhost:3002",
+    [string]$AutheliaUrl = "https://127.0.0.1:9091/api/state",
     [switch]$SkipStart,
     [switch]$SkipNginx,
     [switch]$SkipDns,
@@ -26,7 +27,8 @@ function Wait-ForHttp {
     param(
         [string]$Url,
         [int]$TimeoutSeconds = 120,
-        [string]$Label = $Url
+        [string]$Label = $Url,
+        [switch]$SkipCertificateCheck
     )
 
     $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
@@ -34,14 +36,21 @@ function Wait-ForHttp {
 
     while ((Get-Date) -lt $deadline) {
         try {
-            $response = Invoke-WebRequest -Uri $Url -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
-            if ($response.StatusCode -ge 200 -and $response.StatusCode -lt 500) {
+            if ($SkipCertificateCheck) {
+                $statusCode = [int](& curl.exe -sk -o NUL -w '%{http_code}' $Url)
+            } else {
+                $response = Invoke-WebRequest -Uri $Url -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
+                $statusCode = $response.StatusCode
+            }
+
+            if ($statusCode -ge 200 -and $statusCode -lt 500) {
                 Write-Success "[+] $Label is ready"
                 return $true
             }
         } catch {
-            Start-Sleep -Seconds 3
+            # retry until deadline
         }
+        Start-Sleep -Seconds 3
     }
 
     throw "Timed out waiting for $Label"
@@ -207,7 +216,7 @@ if (-not $SkipStart) {
 
     try {
         Wait-ForHttp -Url $NginxUrl -Label "Nginx Proxy Manager"
-        Wait-ForHttp -Url "http://localhost:9091/api/state" -Label "Authelia"
+        Wait-ForHttp -Url $AutheliaUrl -Label "Authelia" -SkipCertificateCheck
     } catch {
         Write-Warn $_.Exception.Message
     }
@@ -278,10 +287,14 @@ Write-Success "`[           Setup complete!                          `]"
 Write-Info "`[====================================================`]"
 Write-Info ""
 Write-Info "Try these URLs (after DNS propagates):"
-Write-Info "  http://authelia.$Domain       - SSO login portal"
-Write-Info "  http://sonarr.$Domain         - protected by Authelia"
-Write-Info "  http://plex.$Domain           - protected by Authelia"
-Write-Info "  http://homepage.$Domain       - dashboard"
+Write-Info "  https://authelia.$Domain      - SSO login portal"
+Write-Info "  https://sonarr.$Domain        - protected by Authelia"
+Write-Info "  https://plex.$Domain          - protected by Authelia"
+Write-Info "  https://homepage.$Domain      - dashboard"
+Write-Info ""
+Write-Info "Before DNS is ready, Authelia is also at:"
+Write-Info "  https://127.0.0.1:9091        - direct (accept self-signed cert)"
+Write-Info "  https://authelia.$Domain:9091 - with hosts entry for $Domain"
 Write-Info ""
 Write-Info "Admin UIs:"
 Write-Info "  NPM:     $NginxUrl  (change default password!)"
