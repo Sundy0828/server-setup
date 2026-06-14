@@ -25,6 +25,9 @@ services:
       DB_MYSQL_USER: npm
       DB_MYSQL_PASSWORD: ${MYSQL_PASSWORD:-npm-pass}
       DB_MYSQL_NAME: npm
+      # NPM 2.13+ has no built-in admin@example.com user; create one on first boot
+      INITIAL_ADMIN_EMAIL: ${NPM_ADMIN_EMAIL:-admin@example.com}
+      INITIAL_ADMIN_PASSWORD: ${NPM_ADMIN_PASSWORD:-changeme}
     ports:
       - "80:80"
       - "443:443"

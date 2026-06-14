@@ -12,7 +12,7 @@ This setup is split into independent stacks:
 
 ### First-run note
 
-On a fresh AdGuard install, finish the wizard at `http://localhost:3002` when prompted, then continue (or re-run npm run setup:dns).
+On a fresh AdGuard install, finish the wizard at `http://localhost:3002` when prompted, then continue (or re-run `npm run setup:dns`). After setup, the admin UI is at `http://localhost:8081`.
 
 After setup, use `http://sonarr.home.lab`, `http://plex.home.lab`, etc. — you should hit the Authelia login first.
 

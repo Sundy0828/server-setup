@@ -43,7 +43,7 @@ function Wait-ForHttp {
                 $statusCode = $response.StatusCode
             }
 
-            if ($statusCode -ge 200 -and $statusCode -lt 500) {
+            if ($statusCode -notin 502, 503, 504 -and $statusCode -ge 200 -and $statusCode -lt 500) {
                 Write-Success "[+] $Label is ready"
                 return $true
             }
@@ -61,6 +61,24 @@ function Ensure-Directory {
     if (-not (Test-Path $Path)) {
         New-Item -ItemType Directory -Path $Path -Force | Out-Null
     }
+}
+
+function Get-DotEnvValue {
+    param(
+        [string]$Path,
+        [string]$Key,
+        [string]$Default = ""
+    )
+
+    if (-not (Test-Path $Path)) { return $Default }
+
+    foreach ($line in Get-Content $Path) {
+        if ($line -match "^\s*$([regex]::Escape($Key))\s*=\s*(.*)\s*$") {
+            return $Matches[1]
+        }
+    }
+
+    return $Default
 }
 
 function Copy-AutheliaTemplates {
@@ -199,7 +217,9 @@ if (-not $SkipStart) {
 
     Write-Warn ""
     Write-Warn "If this is the first AdGuard run, complete setup at $AdGuardUrl"
-    Write-Warn "Use any admin username/password - you will enter it again for DNS rewrites."
+    Write-Warn "Create an AdGuard admin account there (separate from Authelia/NPM)."
+    Write-Warn "After setup, admin UI moves to http://localhost:8081 (DNS script auto-detects)."
+    Write-Warn "You will be prompted for that same AdGuard login during DNS setup."
     Write-Warn ""
 
     try {
@@ -215,7 +235,7 @@ if (-not $SkipStart) {
     Pop-Location
 
     try {
-        Wait-ForHttp -Url $NginxUrl -Label "Nginx Proxy Manager"
+        Wait-ForHttp -Url "$NginxUrl/api/" -Label "Nginx Proxy Manager API"
         Wait-ForHttp -Url $AutheliaUrl -Label "Authelia" -SkipCertificateCheck
     } catch {
         Write-Warn $_.Exception.Message
@@ -241,12 +261,12 @@ if (-not $SkipStart) {
 # Step 6: NPM proxy hosts + Authelia forward auth
 if (-not $SkipNginx) {
     Write-Info "STEP 6: Nginx Proxy Manager routes + SSO"
-    Write-Info "Default NPM login: admin@example.com / changeme (change after setup)"
+    $nginxUser = Get-DotEnvValue -Path $envPath -Key "NPM_ADMIN_EMAIL" -Default "admin@example.com"
+    $nginxPassPlain = Get-DotEnvValue -Path $envPath -Key "NPM_ADMIN_PASSWORD" -Default "changeme"
+    Write-Info "NPM login: $nginxUser (password from infra-stack/.env)"
     Write-Info ""
 
-    $nginxUser = "admin@example.com"
-    $nginxPassPlain = "changeme"
-    $customPass = Read-Host "NPM admin password [Enter = changeme]"
+    $customPass = Read-Host "NPM admin password [Enter = value from .env]"
     if ($customPass) {
         $nginxPassPlain = $customPass
     }
@@ -277,7 +297,15 @@ if (-not $SkipDns) {
 # Step 8: Restart Authelia to pick up config
 Write-Info "STEP 8: Restarting Authelia"
 Push-Location (Join-Path $ProjectRoot "infra-stack")
-docker compose restart authelia 2>$null | Out-Null
+$prevErrorAction = $ErrorActionPreference
+$ErrorActionPreference = "Continue"
+try {
+    # Docker writes progress to stderr; ignore that and rely on exit code.
+    docker compose restart authelia 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0 -and $null -ne $LASTEXITCODE) { exit $LASTEXITCODE }
+} finally {
+    $ErrorActionPreference = $prevErrorAction
+}
 Pop-Location
 Write-Success "[+] Authelia restarted"
 Write-Info ""

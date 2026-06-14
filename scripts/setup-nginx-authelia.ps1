@@ -49,9 +49,9 @@ try {
         -Headers $headers -Method Get -ErrorAction Stop)
 
     $existingDomains = @{}
-    foreach ($host in $existingHosts) {
-        foreach ($name in $host.domain_names) {
-            $existingDomains[$name.ToLower()] = $host
+    foreach ($proxyHost in $existingHosts) {
+        foreach ($name in $proxyHost.domain_names) {
+            $existingDomains[$name.ToLower()] = $proxyHost
         }
     }
     Write-Info "[+] Found $($existingHosts.Count) existing proxy host(s)"
@@ -78,47 +78,50 @@ try {
         }
 
         try {
-            $proxyHostBody = @{
+            $proxyHostBody = [ordered]@{
                 domain_names = @($domainName)
                 forward_scheme = "http"
                 forward_host = $service.host
                 forward_port = $service.port
-                certificate_id = 0
-                ssl_forced = $false
-                http2_support = $false
-                websockets_support = $service.ws
-                block_exploits = $true
-                caching_enabled = $false
-            } | ConvertTo-Json
+                allow_websocket_upgrade = [bool]$service.ws
+            }
+
+            if ($useAuth) {
+                $proxyHostBody.advanced_config = @"
+location = /authelia/api/verify {
+    internal;
+    proxy_pass http://authelia:9091/api/verify;
+    proxy_pass_request_body off;
+    proxy_set_header Content-Length "";
+    proxy_set_header X-Original-URL `$scheme://`$http_host`$request_uri;
+    proxy_set_header X-Forwarded-Proto `$scheme;
+    proxy_set_header X-Forwarded-For `$remote_addr;
+}
+
+location / {
+    auth_request /authelia/api/verify;
+    error_page 401 =302 http://authelia.$Domain/?rd=`$scheme://`$http_host`$request_uri;
+    auth_request_set `$remote_user `$upstream_http_remote_user;
+    auth_request_set `$remote_groups `$upstream_http_remote_groups;
+    auth_request_set `$remote_name `$upstream_http_remote_name;
+    auth_request_set `$remote_email `$upstream_http_remote_email;
+    proxy_set_header Remote-User `$remote_user;
+    proxy_set_header Remote-Groups `$remote_groups;
+    proxy_set_header Remote-Name `$remote_name;
+    proxy_set_header Remote-Email `$remote_email;
+    proxy_pass `$forward_scheme://`$server:`$port;
+}
+"@
+            }
 
             $proxyResponse = Invoke-RestMethod -Uri "$NginxUrl/api/nginx/proxy-hosts" `
                 -Headers $headers `
                 -Method Post `
-                -Body $proxyHostBody `
+                -Body ($proxyHostBody | ConvertTo-Json) `
                 -ContentType "application/json" `
                 -ErrorAction Stop
 
-            $proxyId = $proxyResponse.id
-
             if ($useAuth) {
-                $authLocationBody = @{
-                    path = "/"
-                    forward_scheme = "http"
-                    forward_host = "authelia"
-                    forward_port = 9091
-                    auth_forward = $true
-                    auth_forward_uri = "/api/verify?rd=http://`$host/"
-                    custom_nginx_upstream = ""
-                    custom_nginx_location = "auth_request_set `$remote_user `$upstream_http_remote_user;`nauth_request_set `$remote_groups `$upstream_http_remote_groups;`nauth_request_set `$remote_name `$upstream_http_remote_name;`nauth_request_set `$remote_email `$upstream_http_remote_email;"
-                } | ConvertTo-Json
-
-                Invoke-RestMethod -Uri "$NginxUrl/api/nginx/proxy-hosts/$proxyId/locations" `
-                    -Headers $headers `
-                    -Method Post `
-                    -Body $authLocationBody `
-                    -ContentType "application/json" `
-                    -ErrorAction Stop | Out-Null
-
                 Write-Success " [+] (with Authelia auth)"
             } else {
                 Write-Success " [+]"

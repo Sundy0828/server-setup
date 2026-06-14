@@ -2,7 +2,7 @@
 # Usage: .\scripts\setup-adguard-dns.ps1
 
 param(
-    [string]$AdGuardUrl = "http://localhost:3002",
+    [string]$AdGuardUrl = "",
     [string]$Domain = "home.lab",
     [string]$NginxContainer = "nginx-pm",
     [string]$AdGuardUser = "",
@@ -19,6 +19,52 @@ function Write-Info { Write-Host $args -ForegroundColor Cyan }
 function Write-Warn { Write-Host $args -ForegroundColor Yellow }
 function Write-Err { Write-Host $args -ForegroundColor Red }
 
+function Test-AdGuardApiReachable {
+    param([string]$BaseUrl)
+
+    try {
+        Invoke-WebRequest -Uri "$BaseUrl/control/status" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop | Out-Null
+        return $true
+    } catch {
+        $response = $_.Exception.Response
+        if ($response -and [int]$response.StatusCode -eq 401) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
+function Resolve-AdGuardUrl {
+    param([string]$PreferredUrl)
+
+    $candidates = @()
+    if ($PreferredUrl) { $candidates += $PreferredUrl.TrimEnd('/') }
+    $candidates += @(
+        "http://127.0.0.1:8081",
+        "http://localhost:8081",
+        "http://127.0.0.1:3002",
+        "http://localhost:3002"
+    )
+
+    foreach ($url in ($candidates | Select-Object -Unique)) {
+        if (Test-AdGuardApiReachable -BaseUrl $url) {
+            return $url
+        }
+    }
+
+    throw @"
+Could not reach AdGuard Home API. Tried: $($candidates -join ', ')
+
+After first-time setup, AdGuard moves its admin API from port 3000 to port 80 inside the container.
+- First-run wizard: http://localhost:3002
+- Admin UI + API (after setup): http://localhost:8081
+
+Ensure adblock-stack is running: npm run start:adblock
+If you changed port mappings, pass -AdGuardUrl explicitly.
+"@
+}
+
 function Get-NginxPmIp {
     param([string]$ContainerName)
 
@@ -33,7 +79,7 @@ function Invoke-AdGuardApi {
     param(
         [string]$Method,
         [string]$Path,
-        [hashtable]$Credential,
+        [PSCredential]$Credential,
         [object]$Body = $null
     )
 
@@ -45,7 +91,12 @@ function Invoke-AdGuardApi {
     }
 
     if ($Credential) {
-        $params.Credential = $Credential
+        $netCred = $Credential.GetNetworkCredential()
+        $pair = "$($netCred.UserName):$($netCred.Password)"
+        $bytes = [System.Text.Encoding]::ASCII.GetBytes($pair)
+        $params.Headers = @{
+            Authorization = "Basic $([Convert]::ToBase64String($bytes))"
+        }
     }
 
     if ($Body) {
@@ -63,12 +114,15 @@ function Get-AdGuardCredential {
 
     if (-not $SkipPrompt) {
         Write-Info ""
-        Write-Info "AdGuard requires credentials (set during first-time setup at $AdGuardUrl)."
-        return Get-Credential -Message "AdGuard Home admin credentials" -UserName "admin"
+        Write-Info "AdGuard Home uses its own admin login from first-time setup at $AdGuardUrl."
+        Write-Info "This is NOT your Authelia or NPM password."
+        return Get-Credential -Message "AdGuard Home admin username and password" -UserName "admin"
     }
 
     return $null
 }
+
+$AdGuardUrl = Resolve-AdGuardUrl -PreferredUrl $AdGuardUrl
 
 Write-Info "[================================================]"
 Write-Info "[       AdGuard DNS Rewrites Setup              ]"
