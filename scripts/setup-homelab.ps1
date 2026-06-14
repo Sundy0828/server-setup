@@ -122,9 +122,9 @@ function Test-UsersNeedSetup {
 }
 
 Write-Info ""
-Write-Info "[====================================================]"
-Write-Info "[           Homelab Bootstrap Setup                  ]"
-Write-Info "[====================================================]"
+Write-Info "`[====================================================`]"
+Write-Info "`[           Homelab Bootstrap Setup                  `]"
+Write-Info "`[====================================================`]"
 Write-Info "Domain: $Domain"
 Write-Info ""
 
@@ -190,14 +190,14 @@ if (-not $SkipStart) {
 
     Write-Warn ""
     Write-Warn "If this is the first AdGuard run, complete setup at $AdGuardUrl"
-    Write-Warn "Use any admin username/password — you will enter it again for DNS rewrites."
+    Write-Warn "Use any admin username/password - you will enter it again for DNS rewrites."
     Write-Warn ""
 
     try {
         Wait-ForHttp -Url $AdGuardUrl -Label "AdGuard Home"
     } catch {
         Write-Warn $_.Exception.Message
-        Write-Warn "Continuing — finish AdGuard setup, then re-run: npm run setup:dns"
+        Write-Warn "Continuing - finish AdGuard setup, then re-run: npm run setup:dns"
     }
 
     Write-Info "  -> infra-stack"
@@ -273,15 +273,15 @@ Pop-Location
 Write-Success "[+] Authelia restarted"
 Write-Info ""
 
-Write-Info "[====================================================]"
-Write-Success "[           Setup complete!                          ]"
-Write-Info "[====================================================]"
+Write-Info "`[====================================================`]"
+Write-Success "`[           Setup complete!                          `]"
+Write-Info "`[====================================================`]"
 Write-Info ""
 Write-Info "Try these URLs (after DNS propagates):"
-Write-Info "  http://authelia.$Domain       — SSO login portal"
-Write-Info "  http://sonarr.$Domain         — protected by Authelia"
-Write-Info "  http://plex.$Domain           — protected by Authelia"
-Write-Info "  http://homepage.$Domain       — dashboard"
+Write-Info "  http://authelia.$Domain       - SSO login portal"
+Write-Info "  http://sonarr.$Domain         - protected by Authelia"
+Write-Info "  http://plex.$Domain           - protected by Authelia"
+Write-Info "  http://homepage.$Domain       - dashboard"
 Write-Info ""
 Write-Info "Admin UIs:"
 Write-Info "  NPM:     $NginxUrl  (change default password!)"
