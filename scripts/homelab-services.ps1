@@ -3,12 +3,11 @@
 
 $script:HomelabServices = @(
     @{ name = "authelia";     host = "authelia";      port = 9091;  ws = $false; skipAuth = $true;  dns = $true }
-    @{ name = "homepage";     host = "homepage";      port = 3000;  ws = $false; skipAuth = $false; dns = $true }
     @{ name = "dashboard";    host = "homepage";      port = 3000;  ws = $false; skipAuth = $false; dns = $true }
     @{ name = "uptime-kuma";  host = "uptime-kuma";   port = 3001;  ws = $true;  skipAuth = $false; dns = $true }
     @{ name = "duplicati";    host = "duplicati";     port = 8200;  ws = $false; skipAuth = $false; dns = $true }
-    @{ name = "adguard";      host = "adguardhome";   port = 3000;  ws = $false; skipAuth = $false; dns = $true }
-    @{ name = "home";         host = "homeassistant"; port = 8123;  ws = $true;  skipAuth = $false; dns = $true }
+    @{ name = "adguard";      host = "adguardhome";   port = 8081;  ws = $false; skipAuth = $false; dns = $true }
+    @{ name = "assistant";    host = "homeassistant"; port = 8123;  ws = $true;  skipAuth = $false; dns = $true }
     @{ name = "plex";         host = "plex";          port = 32400; ws = $false; skipAuth = $false; dns = $true }
     @{ name = "sonarr";       host = "sonarr";        port = 8989;  ws = $false; skipAuth = $false; dns = $true }
     @{ name = "radarr";       host = "radarr";        port = 7878;  ws = $false; skipAuth = $false; dns = $true }
@@ -18,6 +17,7 @@ $script:HomelabServices = @(
     @{ name = "readarr";      host = "readarr";       port = 8787;  ws = $false; skipAuth = $false; dns = $true }
     @{ name = "qbittorrent";  host = "qbittorrent";   port = 8080;  ws = $false; skipAuth = $false; dns = $true }
     @{ name = "overseerr";    host = "overseerr";     port = 5055;  ws = $false; skipAuth = $false; dns = $true }
+    @{ name = "nginx";        host = "nginx";         port = 81;    ws = $false; skipAuth = $false; dns = $true }
 )
 
 function Get-HomelabDnsDomains {
