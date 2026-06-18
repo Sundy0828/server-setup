@@ -141,12 +141,7 @@ if (-not $SkipUsers) {
         @{
             Username = "admin"
             DisplayName = "Administrator"
-            Email = "admin@yourdomain.com"
-        },
-        @{
-            Username = "reg"
-            DisplayName = "Regular User"
-            Email = "user@yourdomain.com"
+            Email = "jerrod.sunderland@gmail.com"
         }
     )
     

@@ -7,7 +7,7 @@ users:
   admin :
     displayname : "Administrator"
     password : "$argon2id$v=19$m=65536,t=3,p=4$m885eAKCb9CRporYgPhQ6A$WJ+Mb7ww7qsV+wCZvWvNK/egQKrYsGFZnrHuuPw+bdo"
-    email : admin@yourdomain.com
+    email : jerrod.sunderland@gmail.com
     groups:
       - users
 

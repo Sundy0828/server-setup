@@ -134,7 +134,7 @@ services:
       # - AUTHELIA_NOTIFIER_SMTP_ADDRESS=submission://${AUTHELIA_NOTIFIER_SMTP_HOST:-smtp.gmail.com}:${AUTHELIA_NOTIFIER_SMTP_PORT:-587}
       # - AUTHELIA_NOTIFIER_SMTP_USERNAME=${AUTHELIA_NOTIFIER_SMTP_USERNAME}
       # - AUTHELIA_NOTIFIER_SMTP_PASSWORD=${AUTHELIA_NOTIFIER_SMTP_PASSWORD}
-      # - AUTHELIA_NOTIFIER_SMTP_SENDER=${AUTHELIA_NOTIFIER_SMTP_SENDER:-authelia@yourdomain.com}
+      # - AUTHELIA_NOTIFIER_SMTP_SENDER=${AUTHELIA_NOTIFIER_SMTP_SENDER:-jerrod.sunderland@gmail.com}
     volumes:
       - ./config/authelia:/config
       - ./data/authelia:/data

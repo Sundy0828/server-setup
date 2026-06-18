@@ -270,7 +270,7 @@ AUTHELIA_NOTIFIER_SMTP_HOST=smtp.gmail.com
 AUTHELIA_NOTIFIER_SMTP_PORT=587
 AUTHELIA_NOTIFIER_SMTP_USERNAME=your-email@gmail.com
 AUTHELIA_NOTIFIER_SMTP_PASSWORD=your-app-password
-AUTHELIA_NOTIFIER_SMTP_SENDER=authelia@yourdomain.com
+AUTHELIA_NOTIFIER_SMTP_SENDER=jerrod.sunderland@gmail.com
 ```
 
 Then uncomment the SMTP section in authelia.yml.
