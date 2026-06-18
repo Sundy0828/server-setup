@@ -149,8 +149,6 @@ networks:
     external: true
 
 volumes:
-  portainer_data:
-    driver: local
   uptime_kuma_data:
     driver: local
   duplicati_config:
