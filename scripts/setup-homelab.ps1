@@ -18,6 +18,8 @@ $ErrorActionPreference = "Stop"
 $ScriptRoot = $PSScriptRoot
 $ProjectRoot = Split-Path -Parent $ScriptRoot
 
+. "$ScriptRoot\homelab-services.ps1"
+
 function Write-Success { Write-Host $args -ForegroundColor Green }
 function Write-Info { Write-Host $args -ForegroundColor Cyan }
 function Write-Warn { Write-Host $args -ForegroundColor Yellow }
@@ -61,24 +63,6 @@ function Ensure-Directory {
     if (-not (Test-Path $Path)) {
         New-Item -ItemType Directory -Path $Path -Force | Out-Null
     }
-}
-
-function Get-DotEnvValue {
-    param(
-        [string]$Path,
-        [string]$Key,
-        [string]$Default = ""
-    )
-
-    if (-not (Test-Path $Path)) { return $Default }
-
-    foreach ($line in Get-Content $Path) {
-        if ($line -match "^\s*$([regex]::Escape($Key))\s*=\s*(.*)\s*$") {
-            return $Matches[1]
-        }
-    }
-
-    return $Default
 }
 
 function Copy-AutheliaTemplates {
@@ -287,7 +271,8 @@ if (-not $SkipNginx) {
 # Step 7: AdGuard DNS rewrites
 if (-not $SkipDns) {
     Write-Info "STEP 7: AdGuard DNS rewrites"
-    & "$ScriptRoot\setup-adguard-dns.ps1" -AdGuardUrl $AdGuardUrl -Domain $Domain
+    $homelabHostIp = Get-HomelabHostIp -EnvPath $envPath
+    & "$ScriptRoot\setup-adguard-dns.ps1" -AdGuardUrl $AdGuardUrl -Domain $Domain -HomelabHostIp $homelabHostIp
     Write-Info ""
 } else {
     Write-Info "STEP 7: Skipped DNS setup (-SkipDns)"

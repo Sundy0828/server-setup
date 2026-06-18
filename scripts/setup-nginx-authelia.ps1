@@ -45,16 +45,46 @@ try {
     Write-Info ""
 
     Write-Info "STEP 2: Loading existing proxy hosts..."
-    $existingHosts = @(Invoke-RestMethod -Uri "$NginxUrl/api/nginx/proxy-hosts" `
+    $existingHosts = Get-NpmProxyHostList (Invoke-RestMethod -Uri "$NginxUrl/api/nginx/proxy-hosts" `
         -Headers $headers -Method Get -ErrorAction Stop)
 
-    $existingDomains = @{}
+    $hostsByDomain = @{}
     foreach ($proxyHost in $existingHosts) {
-        foreach ($name in $proxyHost.domain_names) {
-            $existingDomains[$name.ToLower()] = $proxyHost
+        foreach ($name in (Get-ProxyHostDomainNames $proxyHost)) {
+            $key = $name.ToLower()
+            if (-not $hostsByDomain.ContainsKey($key)) {
+                $hostsByDomain[$key] = @()
+            }
+            $hostsByDomain[$key] += $proxyHost
         }
     }
+
+    $dedupCount = 0
+    foreach ($key in @($hostsByDomain.Keys)) {
+        $hosts = $hostsByDomain[$key]
+        if ($hosts.Count -le 1) { continue }
+
+        for ($i = 1; $i -lt $hosts.Count; $i++) {
+            try {
+                Invoke-RestMethod -Uri "$NginxUrl/api/nginx/proxy-hosts/$($hosts[$i].id)" `
+                    -Headers $headers -Method Delete -ErrorAction Stop | Out-Null
+                $dedupCount++
+            } catch {
+                Write-Warn "Could not remove duplicate proxy host for '$key' (id $($hosts[$i].id)): $($_.Exception.Message)"
+            }
+        }
+        $hostsByDomain[$key] = @($hosts[0])
+    }
+
+    $existingDomains = @{}
+    foreach ($key in $hostsByDomain.Keys) {
+        $existingDomains[$key] = $hostsByDomain[$key][0]
+    }
+
     Write-Info "[+] Found $($existingHosts.Count) existing proxy host(s)"
+    if ($dedupCount -gt 0) {
+        Write-Warn "[+] Removed $dedupCount duplicate proxy host(s)"
+    }
     Write-Info ""
 
     Write-Info "STEP 3: Creating proxy hosts..."

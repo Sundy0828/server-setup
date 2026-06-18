@@ -1,6 +1,57 @@
 # Shared service catalog for NPM proxy hosts and AdGuard DNS rewrites.
 # Dot-source from setup scripts: . "$PSScriptRoot/homelab-services.ps1"
 
+$script:HomelabDefaultHostIp = "192.168.0.54"
+
+function Get-DotEnvValue {
+    param(
+        [string]$Path,
+        [string]$Key,
+        [string]$Default = ""
+    )
+
+    if (-not (Test-Path $Path)) { return $Default }
+
+    foreach ($line in Get-Content $Path) {
+        if ($line -match "^\s*$([regex]::Escape($Key))\s*=\s*(.*)\s*$") {
+            return $Matches[1]
+        }
+    }
+
+    return $Default
+}
+
+function Get-HomelabHostIp {
+    param(
+        [string]$PreferredIp = "",
+        [string]$EnvPath = ""
+    )
+
+    if ($PreferredIp) { return $PreferredIp.Trim() }
+
+    if ($EnvPath) {
+        $fromEnv = Get-DotEnvValue -Path $EnvPath -Key "HOMELAB_HOST_IP"
+        if ($fromEnv) { return $fromEnv.Trim() }
+    }
+
+    return $script:HomelabDefaultHostIp
+}
+
+function Get-NpmProxyHostList {
+    param([object]$Raw)
+
+    if ($null -eq $Raw) { return @() }
+    if ($Raw -is [System.Array]) { return @($Raw) }
+    if ($Raw.proxy_hosts) { return @($Raw.proxy_hosts) }
+    return @($Raw)
+}
+
+function Get-ProxyHostDomainNames {
+    param([object]$ProxyHost)
+
+    return @($ProxyHost.domain_names | ForEach-Object { [string]$_ })
+}
+
 $script:HomelabServices = @(
     @{ name = "authelia";     host = "authelia";      port = 9091;  ws = $false; skipAuth = $true;  dns = $true }
     @{ name = "dashboard";    host = "homepage";      port = 3000;  ws = $false; skipAuth = $false; dns = $true }

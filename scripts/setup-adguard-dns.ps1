@@ -4,7 +4,7 @@
 param(
     [string]$AdGuardUrl = "",
     [string]$Domain = "home.lab",
-    [string]$NginxContainer = "nginx-pm",
+    [string]$HomelabHostIp = "",
     [string]$AdGuardUser = "",
     [string]$AdGuardPass = "",
     [switch]$SkipPrompt
@@ -65,14 +65,12 @@ If you changed port mappings, pass -AdGuardUrl explicitly.
 "@
 }
 
-function Get-NginxPmIp {
-    param([string]$ContainerName)
+function Get-AdGuardRewriteList {
+    param([object]$Raw)
 
-    $ip = docker inspect $ContainerName --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' 2>$null
-    if (-not $ip) {
-        throw "Could not resolve IP for container '$ContainerName'. Is infra-stack running?"
-    }
-    return $ip.Trim()
+    if ($null -eq $Raw) { return @() }
+    if ($Raw -is [System.Array]) { return @($Raw) }
+    return @($Raw)
 }
 
 function Invoke-AdGuardApi {
@@ -124,6 +122,9 @@ function Get-AdGuardCredential {
 
 $AdGuardUrl = Resolve-AdGuardUrl -PreferredUrl $AdGuardUrl
 
+$envPath = Join-Path (Split-Path -Parent $PSScriptRoot) "infra-stack\.env"
+$targetIp = Get-HomelabHostIp -PreferredIp $HomelabHostIp -EnvPath $envPath
+
 Write-Info "[================================================]"
 Write-Info "[       AdGuard DNS Rewrites Setup              ]"
 Write-Info "[================================================]"
@@ -131,8 +132,7 @@ Write-Info "AdGuard URL: $AdGuardUrl"
 Write-Info "Domain:      *.$Domain"
 Write-Info ""
 
-$nginxIp = Get-NginxPmIp -ContainerName $NginxContainer
-Write-Info "NPM container IP: $nginxIp"
+Write-Info "Homelab host IP: $targetIp"
 Write-Info ""
 
 $domains = Get-HomelabDnsDomains -Domain $Domain
@@ -140,64 +140,90 @@ $credential = $null
 $existing = @()
 
 try {
-    $existing = @(Invoke-AdGuardApi -Method Get -Path "/control/rewrite/list" -Credential $null)
+    $existing = Get-AdGuardRewriteList (Invoke-AdGuardApi -Method Get -Path "/control/rewrite/list" -Credential $null)
     Write-Info "AdGuard API reachable without authentication."
 } catch {
     $credential = Get-AdGuardCredential
     if (-not $credential) {
         Write-Warn "Skipping DNS rewrites (no AdGuard credentials)."
-        Write-Warn "Add rewrites manually in AdGuard: Filters -> DNS rewrites -> point *.$Domain to $nginxIp"
+        Write-Warn "Add rewrites manually in AdGuard: Filters -> DNS rewrites -> point *.$Domain to $targetIp"
         exit 0
     }
-    $existing = @(Invoke-AdGuardApi -Method Get -Path "/control/rewrite/list" -Credential $credential)
+    $existing = Get-AdGuardRewriteList (Invoke-AdGuardApi -Method Get -Path "/control/rewrite/list" -Credential $credential)
 }
 
 $existingByDomain = @{}
 foreach ($rule in $existing) {
     if ($rule.domain) {
-        $existingByDomain[$rule.domain] = $rule
+        if (-not $existingByDomain.ContainsKey($rule.domain)) {
+            $existingByDomain[$rule.domain] = @()
+        }
+        $existingByDomain[$rule.domain] += $rule
     }
 }
 
 $added = 0
 $updated = 0
 $skipped = 0
+$deduped = 0
 
 foreach ($hostDomain in $domains) {
     Write-Info ">> $hostDomain" -NoNewline
 
-    if ($existingByDomain.ContainsKey($hostDomain)) {
-        $rule = $existingByDomain[$hostDomain]
-        if ($rule.answer -eq $nginxIp) {
-            Write-Success " [=] (already correct)"
-            $skipped++
-            continue
-        }
+    $rules = if ($existingByDomain.ContainsKey($hostDomain)) {
+        @($existingByDomain[$hostDomain])
+    } else {
+        @()
+    }
+    $correctRules = @($rules | Where-Object { $_.answer -eq $targetIp })
+    $staleRules = @($rules | Where-Object { $_.answer -ne $targetIp })
 
+    if ($correctRules.Count -eq 1 -and $staleRules.Count -eq 0) {
+        Write-Success " [=] (already correct)"
+        $skipped++
+        continue
+    }
+
+    foreach ($rule in $staleRules) {
         try {
             Invoke-AdGuardApi -Method Post -Path "/control/rewrite/delete" -Credential $credential -Body @{
                 domain = $hostDomain
                 answer = $rule.answer
             } | Out-Null
+            if ($rules.Count -gt 1) { $deduped++ }
         } catch {
-            Write-Err " [-] FAILED to remove stale rewrite: $($_.Exception.Message)"
-            continue
+            Write-Err " [-] FAILED to remove stale rewrite ($rule.answer): $($_.Exception.Message)"
         }
+    }
+
+    if ($correctRules.Count -gt 1) {
+        foreach ($rule in $correctRules | Select-Object -Skip 1) {
+            try {
+                Invoke-AdGuardApi -Method Post -Path "/control/rewrite/delete" -Credential $credential -Body @{
+                    domain = $hostDomain
+                    answer = $rule.answer
+                } | Out-Null
+                $deduped++
+            } catch {
+                Write-Err " [-] FAILED to remove duplicate rewrite: $($_.Exception.Message)"
+            }
+        }
+    }
+
+    if ($correctRules.Count -ge 1) {
+        Write-Success " [~] (updated)"
+        $updated++
+        continue
     }
 
     try {
         Invoke-AdGuardApi -Method Post -Path "/control/rewrite/add" -Credential $credential -Body @{
             domain = $hostDomain
-            answer = $nginxIp
+            answer = $targetIp
         } | Out-Null
 
-        if ($existingByDomain.ContainsKey($hostDomain)) {
-            Write-Success " [~] (updated)"
-            $updated++
-        } else {
-            Write-Success " [+] (added)"
-            $added++
-        }
+        Write-Success " [+] (added)"
+        $added++
     } catch {
         Write-Err " [-] FAILED: $($_.Exception.Message)"
     }
@@ -208,6 +234,9 @@ Write-Info "============================================"
 Write-Success "  Added:   $added"
 Write-Success "  Updated: $updated"
 Write-Success "  Skipped: $skipped"
+if ($deduped -gt 0) {
+    Write-Success "  Deduped: $deduped"
+}
 Write-Info ""
 Write-Info "Ensure this machine uses AdGuard for DNS (port 53)."
 Write-Success "Done!"
