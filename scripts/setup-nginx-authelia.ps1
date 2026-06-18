@@ -19,6 +19,90 @@ function Write-Info { Write-Host $args -ForegroundColor Cyan }
 function Write-Warn { Write-Host $args -ForegroundColor Yellow }
 function Write-Err { Write-Host $args -ForegroundColor Red }
 
+function Get-AutheliaNpmAdvancedConfig {
+    param([string]$Domain)
+
+    # Use $user/$groups/$name/$email — not $remote_user, which conflicts with nginx built-ins.
+    return @"
+location = /authelia/api/verify {
+    internal;
+    proxy_pass https://authelia:9091/api/verify;
+    proxy_ssl_verify off;
+    proxy_pass_request_body off;
+    proxy_set_header Content-Length "";
+    proxy_set_header X-Original-URL `$scheme://`$http_host`$request_uri;
+    proxy_set_header X-Forwarded-Proto `$scheme;
+    proxy_set_header X-Forwarded-For `$remote_addr;
+}
+
+location / {
+    auth_request /authelia/api/verify;
+    error_page 401 =302 http://authelia.$Domain/?rd=`$scheme://`$http_host`$request_uri;
+    auth_request_set `$user `$upstream_http_remote_user;
+    auth_request_set `$groups `$upstream_http_remote_groups;
+    auth_request_set `$name `$upstream_http_remote_name;
+    auth_request_set `$email `$upstream_http_remote_email;
+    proxy_set_header Remote-User `$user;
+    proxy_set_header Remote-Groups `$groups;
+    proxy_set_header Remote-Name `$name;
+    proxy_set_header Remote-Email `$email;
+    proxy_pass `$forward_scheme://`$server:`$port;
+}
+"@
+}
+
+function Test-ProxyHostNeedsRepair {
+    param(
+        [object]$ProxyHost,
+        [bool]$UseAuth
+    )
+
+    if ($UseAuth) {
+        $config = [string]$ProxyHost.advanced_config
+        if ($config -match '\$remote_user|\$remote_groups|\$remote_name|\$remote_email') {
+            return $true
+        }
+        if ($config -match 'proxy_pass\s+http://authelia:9091/api/verify') {
+            return $true
+        }
+    }
+
+    $meta = $ProxyHost.meta
+    if ($null -eq $meta) { return $false }
+
+    if ($meta.PSObject.Properties['nginx_online'] -and $meta.nginx_online -eq $false) {
+        return $true
+    }
+
+    if ($meta.PSObject.Properties['nginx_err'] -and $meta.nginx_err) {
+        return $true
+    }
+
+    return $false
+}
+
+function New-NpmProxyHostBody {
+    param(
+        [object]$Service,
+        [string]$Domain,
+        [bool]$UseAuth
+    )
+
+    $body = [ordered]@{
+        domain_names = @("$($Service.name).$Domain")
+        forward_scheme = "http"
+        forward_host = $Service.host
+        forward_port = $Service.port
+        allow_websocket_upgrade = [bool]$Service.ws
+    }
+
+    if ($UseAuth) {
+        $body.advanced_config = Get-AutheliaNpmAdvancedConfig -Domain $Domain
+    }
+
+    return $body
+}
+
 Write-Info "[================================================]"
 Write-Info "[  NGINX Proxy Manager + Authelia Auto Setup   ]"
 Write-Info "[================================================]"
@@ -92,64 +176,52 @@ try {
     Write-Info ""
 
     $successCount = 0
+    $repairCount = 0
     $skipCount = 0
     $failCount = 0
 
     foreach ($service in $script:HomelabServices) {
         $domainName = "$($service.name).$Domain"
         $useAuth = -not $service.skipAuth
+        $domainKey = $domainName.ToLower()
 
         Write-Info ">> $($service.name)" -NoNewline
 
-        if ($existingDomains.ContainsKey($domainName.ToLower())) {
-            Write-Warn " [=] (already exists)"
-            $skipCount++
-            continue
-        }
-
         try {
-            $proxyHostBody = [ordered]@{
-                domain_names = @($domainName)
-                forward_scheme = "http"
-                forward_host = $service.host
-                forward_port = $service.port
-                allow_websocket_upgrade = [bool]$service.ws
+            if ($existingDomains.ContainsKey($domainKey)) {
+                $existingHost = $existingDomains[$domainKey]
+
+                if (-not (Test-ProxyHostNeedsRepair -ProxyHost $existingHost -UseAuth:$useAuth)) {
+                    Write-Warn " [=] (already exists)"
+                    $skipCount++
+                    continue
+                }
+
+                $proxyHostBody = New-NpmProxyHostBody -Service $service -Domain $Domain -UseAuth:$useAuth
+                Invoke-RestMethod -Uri "$NginxUrl/api/nginx/proxy-hosts/$($existingHost.id)" `
+                    -Headers $headers `
+                    -Method Put `
+                    -Body ($proxyHostBody | ConvertTo-Json) `
+                    -ContentType "application/json" `
+                    -ErrorAction Stop | Out-Null
+
+                if ($useAuth) {
+                    Write-Success " [~] (repaired Authelia auth config)"
+                } else {
+                    Write-Success " [~] (repaired)"
+                }
+
+                $repairCount++
+                continue
             }
 
-            if ($useAuth) {
-                $proxyHostBody.advanced_config = @"
-location = /authelia/api/verify {
-    internal;
-    proxy_pass http://authelia:9091/api/verify;
-    proxy_pass_request_body off;
-    proxy_set_header Content-Length "";
-    proxy_set_header X-Original-URL `$scheme://`$http_host`$request_uri;
-    proxy_set_header X-Forwarded-Proto `$scheme;
-    proxy_set_header X-Forwarded-For `$remote_addr;
-}
-
-location / {
-    auth_request /authelia/api/verify;
-    error_page 401 =302 http://authelia.$Domain/?rd=`$scheme://`$http_host`$request_uri;
-    auth_request_set `$remote_user `$upstream_http_remote_user;
-    auth_request_set `$remote_groups `$upstream_http_remote_groups;
-    auth_request_set `$remote_name `$upstream_http_remote_name;
-    auth_request_set `$remote_email `$upstream_http_remote_email;
-    proxy_set_header Remote-User `$remote_user;
-    proxy_set_header Remote-Groups `$remote_groups;
-    proxy_set_header Remote-Name `$remote_name;
-    proxy_set_header Remote-Email `$remote_email;
-    proxy_pass `$forward_scheme://`$server:`$port;
-}
-"@
-            }
-
-            $proxyResponse = Invoke-RestMethod -Uri "$NginxUrl/api/nginx/proxy-hosts" `
+            $proxyHostBody = New-NpmProxyHostBody -Service $service -Domain $Domain -UseAuth:$useAuth
+            Invoke-RestMethod -Uri "$NginxUrl/api/nginx/proxy-hosts" `
                 -Headers $headers `
                 -Method Post `
                 -Body ($proxyHostBody | ConvertTo-Json) `
                 -ContentType "application/json" `
-                -ErrorAction Stop
+                -ErrorAction Stop | Out-Null
 
             if ($useAuth) {
                 Write-Success " [+] (with Authelia auth)"
@@ -169,6 +241,9 @@ location / {
     Write-Info "============================================"
     Write-Info "RESULTS:"
     Write-Success "  [+] Created: $successCount"
+    if ($repairCount -gt 0) {
+        Write-Success "  [~] Repaired: $repairCount"
+    }
     if ($skipCount -gt 0) {
         Write-Warn "  [=] Skipped: $skipCount"
     }

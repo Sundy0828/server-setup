@@ -43,40 +43,28 @@ access_control:
 
     # Protected homelab services (password only; enable two_factor per-domain if desired)
     - domain:
-        - 'homepage.home.lab'
-        - 'portainer.home.lab'
+        - 'dashboard.home.lab'
         - 'uptime-kuma.home.lab'
-        - 'adguardhome.home.lab'
-        - 'homeassistant.home.lab'
         - 'duplicati.home.lab'
+        - 'adguard.home.lab'
+        - 'assistant.home.lab'
+        - 'plex.home.lab'
         - 'sonarr.home.lab'
         - 'radarr.home.lab'
         - 'lidarr.home.lab'
-        - 'readarr.home.lab'
-        - 'prowlarr.home.lab'
         - 'bazarr.home.lab'
-        - 'overseerr.home.lab'
-        - 'minecraft.home.lab'
-        - 'plex.home.lab'
+        - 'prowlarr.home.lab'
+        - 'readarr.home.lab'
         - 'qbittorrent.home.lab'
-        - 'sabnzbd.home.lab'
+        - 'overseerr.home.lab'
+        - 'nginx.home.lab'
       policy: 'one_factor'
-
-    - domain: 'admin.home.lab'
-      policy: 'two_factor'
 
 session:
   cookies:
-    # Primary — use with hosts entry: 127.0.0.1 authelia.home.lab
-    # Direct: https://authelia.home.lab:9091
-    # Via NPM later: change authelia_url to https://authelia.home.lab (no port)
     - domain: 'home.lab'
       authelia_url: 'https://authelia.home.lab:9091'
-      default_redirection_url: 'https://homepage.home.lab:3000'
-    # Fallback — direct IP access: https://127.0.0.1:9091
-    - domain: '127.0.0.1'
-      authelia_url: 'https://127.0.0.1:9091'
-      default_redirection_url: 'https://127.0.0.1:3000'
+      default_redirection_url: 'https://dashboard.home.lab'
   expiration: '1h'
   inactivity: '15m'
   redis:

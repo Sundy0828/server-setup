@@ -39,12 +39,11 @@ access_control:
 
     # Protected homelab services (password only; enable two_factor per-domain if desired)
     - domain:
-        - 'homepage.{{DOMAIN}}'
         - 'dashboard.{{DOMAIN}}'
         - 'uptime-kuma.{{DOMAIN}}'
         - 'duplicati.{{DOMAIN}}'
         - 'adguard.{{DOMAIN}}'
-        - 'home.{{DOMAIN}}'
+        - 'assistant.{{DOMAIN}}'
         - 'plex.{{DOMAIN}}'
         - 'sonarr.{{DOMAIN}}'
         - 'radarr.{{DOMAIN}}'
@@ -54,6 +53,7 @@ access_control:
         - 'readarr.{{DOMAIN}}'
         - 'qbittorrent.{{DOMAIN}}'
         - 'overseerr.{{DOMAIN}}'
+        - 'nginx.{{DOMAIN}}'
       policy: 'one_factor'
 
 session:
