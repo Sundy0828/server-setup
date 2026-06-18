@@ -70,14 +70,6 @@ This file contains example configurations for setting up forward authentication 
 
 Copy and modify for each service:
 
-**Portainer:**
-
-```
-Domain: portainer.yourdomain.com
-Forward to: portainer:9000
-Forward Auth: authelia:9091 (/api/verify?rd=https://$host/)
-```
-
 **Uptime-Kuma:**
 
 ```

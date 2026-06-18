@@ -194,7 +194,6 @@ docker compose exec authelia cat /config/authelia.yml
 ## 🎯 Protected Services
 
 - Homepage
-- Portainer
 - Uptime-Kuma
 - Duplicati
 - AdGuard Home

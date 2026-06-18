@@ -137,7 +137,6 @@ User Requests Service (https://sonarr.yourdomain.com)
 Configure these services in Nginx Proxy Manager with Authelia forward auth:
 
 - Homepage
-- Portainer
 - Uptime-Kuma
 - Duplicati
 - AdGuard Home

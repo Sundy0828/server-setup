@@ -155,7 +155,6 @@ Alternative method using Nginx access control:
 ### Services that should be protected (add to authelia.yml):
 
 - Homepage
-- Portainer
 - Uptime-Kuma
 - Duplicati
 - Overseerr
@@ -175,14 +174,6 @@ Alternative method using Nginx access control:
 ```
 Domain: homepage.yourdomain.com
 Forward to: homepage:3000
-With Forward Auth: authelia:9091
-```
-
-### Portainer
-
-```
-Domain: portainer.yourdomain.com
-Forward to: portainer:9000
 With Forward Auth: authelia:9091
 ```
 

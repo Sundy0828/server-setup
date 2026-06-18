@@ -6,7 +6,7 @@ param(
     [string]$Domain = "home.lab",
     [string]$NginxUrl = "http://localhost:81",
     [string]$AdGuardUrl = "http://localhost:3002",
-    [string]$AutheliaUrl = "https://127.0.0.1:9091/api/state",
+    [string]$AutheliaUrl = "http://authelia.home.lab/api/state",
     [switch]$SkipStart,
     [switch]$SkipNginx,
     [switch]$SkipDns,

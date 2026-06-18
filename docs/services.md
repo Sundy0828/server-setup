@@ -13,7 +13,6 @@
 
 ## Infra
 
-- Portainer (9000)
 - Uptime Kuma (3001)
 - Duplicati (8200)
 - NGINX (81)

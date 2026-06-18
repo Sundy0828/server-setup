@@ -18,19 +18,6 @@ This stack contains core infrastructure services for monitoring, management, and
   - Web Socket support
   - MySQL backend for configuration persistence
 
-### Portainer CE (Container Management)
-
-- **Port**: 9000 (UI), 8000 (edge agent)
-- **Purpose**: Docker container management UI
-- **Access**: `http://localhost:9000`
-- **Setup**: First login creates admin account
-- **Features**:
-  - Visual container management
-  - Image management
-  - Volume and network visualization
-  - Stack templates
-  - Registry management
-
 ### Uptime Kuma (Monitoring & Status)
 
 - **Port**: 3001
@@ -120,7 +107,6 @@ npm run logs:infra
 ## Accessing Services
 
 - **Nginx Proxy Manager**: http://localhost:81 (admin UI)
-- **Portainer**: http://localhost:9000
 - **Uptime Kuma**: http://localhost:3001
 - **Duplicati**: http://localhost:8200
 
@@ -174,9 +160,6 @@ Domain: plex.example.com
 
 Domain: arr.example.com
   → http://192.168.1.10:8989 (Sonarr)
-
-Domain: portainer.example.com
-  → http://192.168.1.10:9000 (Portainer)
 ```
 
 ### Database
@@ -193,23 +176,11 @@ Database credentials (from `.env`):
 npm run logs:infra:nginx
 ```
 
-## Docker Socket Mount
-
-Portainer needs access to the Docker socket to manage containers. This requires elevated permissions.
-
-```yaml
-volumes:
-  - /var/run/docker.sock:/var/run/docker.sock
-```
-
-On systems with `podman`, you may need to adjust this.
-
 ## Troubleshooting
 
 - **Nginx won't start**: Check ports 80, 443, 81 aren't already in use
 - **Can't reach Nginx UI**: Verify container is running with `docker ps`
 - **SSL certificate won't generate**: Ensure domain DNS points to your server, ports 80/443 accessible
 - **Proxy not forwarding**: Verify internal service is reachable from container (use service name on homelab network)
-- **Portainer won't start**: Check Docker socket permissions
 - **Duplicati backup fails**: Verify source paths exist and are readable
 - **Uptime Kuma can't reach services**: Services must be on the same `homelab` network

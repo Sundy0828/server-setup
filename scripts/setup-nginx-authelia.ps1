@@ -26,7 +26,7 @@ function Get-AutheliaNpmAdvancedConfig {
     return @"
 location = /authelia/api/verify {
     internal;
-    proxy_pass https://authelia:9091/api/verify;
+    proxy_pass https://authelia.home.lab/api/verify;
     proxy_ssl_verify off;
     proxy_pass_request_body off;
     proxy_set_header Content-Length "";
