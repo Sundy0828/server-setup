@@ -11,7 +11,8 @@ param(
     [switch]$SkipNginx,
     [switch]$SkipSsl,
     [switch]$SkipDns,
-    [switch]$SkipStacks
+    [switch]$SkipStacks,
+    [switch]$SkipArrAuth
 )
 
 $ErrorActionPreference = "Stop"
@@ -315,6 +316,16 @@ try {
 Pop-Location
 Write-Success "[+] Authelia restarted"
 Write-Info ""
+
+# Step 10: Set *arr apps to External auth so Authelia handles login
+if (-not $SkipArrAuth) {
+    Write-Info "STEP 10: Set *arr app authentication to External"
+    & "$ScriptRoot\set-arr-auth-external.ps1" -PlexStackPath (Join-Path $ProjectRoot "plex-stack")
+    Write-Info ""
+} else {
+    Write-Info "STEP 10: Skipped *arr auth setup (-SkipArrAuth)"
+    Write-Info ""
+}
 
 Write-Info "`[====================================================`]"
 Write-Success "`[           Setup complete!                          `]"

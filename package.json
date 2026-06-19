@@ -37,7 +37,8 @@
     "setup:authelia": "powershell -ExecutionPolicy Bypass -File ./scripts/setup-authelia.ps1",
     "setup:nginx": "powershell -ExecutionPolicy Bypass -File ./scripts/setup-nginx-authelia.ps1",
     "setup:ssl": "powershell -ExecutionPolicy Bypass -File ./scripts/setup-ssl-cert.ps1",
-    "setup:dns": "powershell -ExecutionPolicy Bypass -File ./scripts/setup-adguard-dns.ps1"
+    "setup:dns": "powershell -ExecutionPolicy Bypass -File ./scripts/setup-adguard-dns.ps1",
+    "setup:arr-auth": "powershell -ExecutionPolicy Bypass -File ./scripts/set-arr-auth-external.ps1"
   },
   "keywords": [
     "docker",

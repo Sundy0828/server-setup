@@ -57,7 +57,7 @@ $script:HomelabServices = @(
     @{ name = "dashboard";    host = "homepage";      port = 3000;  ws = $false; skipAuth = $false; dns = $true }
     @{ name = "uptime-kuma";  host = "uptime-kuma";   port = 3001;  ws = $true;  skipAuth = $false; dns = $true }
     @{ name = "duplicati";    host = "duplicati";     port = 8200;  ws = $false; skipAuth = $false; dns = $true }
-    @{ name = "adguard";      host = "adguardhome";   port = 8081;  ws = $false; skipAuth = $false; dns = $true }
+    @{ name = "adguard";      host = "adguardhome";   port = 80;    ws = $false; skipAuth = $false; dns = $true }
     @{ name = "assistant";    host = "homeassistant"; port = 8123;  ws = $true;  skipAuth = $false; dns = $true }
     @{ name = "plex";         host = "plex";          port = 32400; ws = $false; skipAuth = $false; dns = $true }
     @{ name = "sonarr";       host = "sonarr";        port = 8989;  ws = $false; skipAuth = $false; dns = $true }
