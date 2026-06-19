@@ -2,6 +2,7 @@
 .env
 .env.*
 !.env.example
+**/arr-setup.env
 
 # Docker volumes, data, and application configs (contains secrets)
 **/data

@@ -12,6 +12,7 @@ param(
     [switch]$SkipSsl,
     [switch]$SkipDns,
     [switch]$SkipStacks,
+    [switch]$SkipArr,
     [switch]$SkipArrAuth
 )
 
@@ -244,7 +245,25 @@ if (-not $SkipStart) {
     Write-Info ""
 }
 
-# Steps 6 + 7 both talk to NPM — resolve credentials once
+# Step 6: Arr app setup (download clients, root folders, Prowlarr, Bazarr)
+if (-not $SkipArr) {
+    Write-Info "STEP 6: Arr app setup (download clients, root folders, Prowlarr, Bazarr)"
+    $arrSetupScript = Join-Path $ProjectRoot "plex-stack\run-arr-setup.ps1"
+    if (Test-Path $arrSetupScript) {
+        & $arrSetupScript
+        if ($LASTEXITCODE -ne 0 -and $null -ne $LASTEXITCODE) {
+            Write-Warn "Arr setup exited with code $LASTEXITCODE — continuing"
+        }
+    } else {
+        Write-Warn "[!] plex-stack/run-arr-setup.ps1 not found — skipping"
+    }
+    Write-Info ""
+} else {
+    Write-Info "STEP 6: Skipped arr setup (-SkipArr)"
+    Write-Info ""
+}
+
+# Steps 7 + 8 both talk to NPM — resolve credentials once
 $nginxUser = ""
 $nginxPassPlain = ""
 if (-not $SkipNginx -or -not $SkipSsl) {
@@ -256,9 +275,9 @@ if (-not $SkipNginx -or -not $SkipSsl) {
     Write-Info ""
 }
 
-# Step 6: NPM proxy hosts + Authelia forward auth
+# Step 7: NPM proxy hosts + Authelia forward auth
 if (-not $SkipNginx) {
-    Write-Info "STEP 6: Nginx Proxy Manager routes + SSO"
+    Write-Info "STEP 7: Nginx Proxy Manager routes + SSO"
 
     & "$ScriptRoot\setup-nginx-authelia.ps1" `
         -NginxUrl $NginxUrl `
@@ -269,13 +288,13 @@ if (-not $SkipNginx) {
     if ($LASTEXITCODE -ne 0 -and $null -ne $LASTEXITCODE) { exit $LASTEXITCODE }
     Write-Info ""
 } else {
-    Write-Info "STEP 6: Skipped NPM setup (-SkipNginx)"
+    Write-Info "STEP 7: Skipped NPM setup (-SkipNginx)"
     Write-Info ""
 }
 
-# Step 7: Wildcard TLS certificate
+# Step 8: Wildcard TLS certificate
 if (-not $SkipSsl) {
-    Write-Info "STEP 7: Wildcard TLS certificate (*.$Domain)"
+    Write-Info "STEP 8: Wildcard TLS certificate (*.$Domain)"
 
     & "$ScriptRoot\setup-ssl-cert.ps1" `
         -NginxUrl $NginxUrl `
@@ -286,23 +305,23 @@ if (-not $SkipSsl) {
     if ($LASTEXITCODE -ne 0 -and $null -ne $LASTEXITCODE) { exit $LASTEXITCODE }
     Write-Info ""
 } else {
-    Write-Info "STEP 7: Skipped SSL setup (-SkipSsl)"
+    Write-Info "STEP 8: Skipped SSL setup (-SkipSsl)"
     Write-Info ""
 }
 
-# Step 8: AdGuard DNS rewrites
+# Step 9: AdGuard DNS rewrites
 if (-not $SkipDns) {
-    Write-Info "STEP 8: AdGuard DNS rewrites"
+    Write-Info "STEP 9: AdGuard DNS rewrites"
     $homelabHostIp = Get-HomelabHostIp -EnvPath $envPath
     & "$ScriptRoot\setup-adguard-dns.ps1" -AdGuardUrl $AdGuardUrl -Domain $Domain -HomelabHostIp $homelabHostIp
     Write-Info ""
 } else {
-    Write-Info "STEP 8: Skipped DNS setup (-SkipDns)"
+    Write-Info "STEP 9: Skipped DNS setup (-SkipDns)"
     Write-Info ""
 }
 
-# Step 9: Restart Authelia to pick up config
-Write-Info "STEP 9: Restarting Authelia"
+# Step 10: Restart Authelia to pick up config
+Write-Info "STEP 10: Restarting Authelia"
 Push-Location (Join-Path $ProjectRoot "infra-stack")
 $prevErrorAction = $ErrorActionPreference
 $ErrorActionPreference = "Continue"
@@ -317,13 +336,13 @@ Pop-Location
 Write-Success "[+] Authelia restarted"
 Write-Info ""
 
-# Step 10: Set *arr apps to External auth so Authelia handles login
+# Step 11: Set *arr apps to External auth so Authelia handles login
 if (-not $SkipArrAuth) {
-    Write-Info "STEP 10: Set *arr app authentication to External"
+    Write-Info "STEP 11: Set *arr app authentication to External"
     & "$ScriptRoot\set-arr-auth-external.ps1" -PlexStackPath (Join-Path $ProjectRoot "plex-stack")
     Write-Info ""
 } else {
-    Write-Info "STEP 10: Skipped *arr auth setup (-SkipArrAuth)"
+    Write-Info "STEP 11: Skipped *arr auth setup (-SkipArrAuth)"
     Write-Info ""
 }
 

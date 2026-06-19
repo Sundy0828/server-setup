@@ -38,7 +38,8 @@
     "setup:nginx": "powershell -ExecutionPolicy Bypass -File ./scripts/setup-nginx-authelia.ps1",
     "setup:ssl": "powershell -ExecutionPolicy Bypass -File ./scripts/setup-ssl-cert.ps1",
     "setup:dns": "powershell -ExecutionPolicy Bypass -File ./scripts/setup-adguard-dns.ps1",
-    "setup:arr-auth": "powershell -ExecutionPolicy Bypass -File ./scripts/set-arr-auth-external.ps1"
+    "setup:arr-auth": "powershell -ExecutionPolicy Bypass -File ./scripts/set-arr-auth-external.ps1",
+    "setup:arr": "powershell -ExecutionPolicy Bypass -File ./plex-stack/run-arr-setup.ps1"
   },
   "keywords": [
     "docker",
