@@ -1,0 +1,82 @@
+---
+# Authelia configuration template for homelab SSO.
+# Copied to config/authelia/configuration.yml by: npm run setup
+# Secrets are supplied via infra-stack/.env (AUTHELIA_* environment variables).
+
+theme: 'auto'
+
+server:
+  address: 'tcp://0.0.0.0:9091/'
+
+log:
+  level: 'info'
+
+identity_validation:
+  reset_password:
+    jwt_secret: 'placeholder_overridden_by_env'
+
+authentication_backend:
+  file:
+    path: /config/users_database.yml
+    password:
+      algorithm: 'argon2'
+      iterations: 3
+      key_length: 32
+      salt_length: 16
+      memory: 65536
+      parallelism: 4
+
+access_control:
+  default_policy: 'deny'
+  rules:
+    # Direct local access during setup (before DNS/NPM)
+    - domain: 'localhost'
+      policy: 'bypass'
+
+    # Login portal — never require forward-auth on itself
+    - domain: 'authelia.{{DOMAIN}}'
+      policy: 'bypass'
+
+    # Protected homelab services (password only; enable two_factor per-domain if desired)
+    - domain:
+        - 'dashboard.{{DOMAIN}}'
+        - 'uptime-kuma.{{DOMAIN}}'
+        - 'duplicati.{{DOMAIN}}'
+        - 'adguard.{{DOMAIN}}'
+        - 'assistant.{{DOMAIN}}'
+        - 'plex.{{DOMAIN}}'
+        - 'sonarr.{{DOMAIN}}'
+        - 'radarr.{{DOMAIN}}'
+        - 'lidarr.{{DOMAIN}}'
+        - 'bazarr.{{DOMAIN}}'
+        - 'prowlarr.{{DOMAIN}}'
+        - 'readarr.{{DOMAIN}}'
+        - 'qbittorrent.{{DOMAIN}}'
+        - 'overseerr.{{DOMAIN}}'
+        - 'nginx.{{DOMAIN}}'
+      policy: 'one_factor'
+
+session:
+  cookies:
+    - domain: '{{DOMAIN}}'
+      authelia_url: 'https://authelia.{{DOMAIN}}'
+      default_redirection_url: 'https://homepage.{{DOMAIN}}'
+  expiration: '1h'
+  inactivity: '15m'
+  redis:
+    host: 'redis'
+    port: 6379
+
+storage:
+  encryption_key: 'placeholder_overridden_by_env'
+  local:
+    path: /data/db.sqlite3
+
+notifier:
+  filesystem:
+    filename: /config/notification.txt
+
+totp:
+  issuer: '{{DOMAIN}}'
+  period: 30
+  skew: 1

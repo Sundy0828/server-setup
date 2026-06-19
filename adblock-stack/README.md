@@ -30,11 +30,11 @@ Best setup: run this DNS stack for all devices **and** still use uBlock Origin i
 
 ## First-time setup
 
-Open setup wizard:
+Open setup wizard (first run only):
 
-- `http://localhost:3000`
+- `http://localhost:3002`
 
-After setup, admin UI is at:
+After setup, admin UI and API are at:
 
 - `http://localhost:8081`
 

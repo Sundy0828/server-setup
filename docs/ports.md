@@ -2,9 +2,8 @@
 
 | Service        | Port           |
 | -------------- | -------------- |
-| AdGuard        | 53, 3002, 8081 |
+| AdGuard        | 53, 3002 (wizard), 8081 (admin/API) |
 | Home Assistant | 8123           |
-| Portainer      | 9000           |
 | Uptime Kuma    | 3001           |
 | Duplicati      | 8200           |
 | NGINX          | 81             |

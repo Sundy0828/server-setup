@@ -25,6 +25,9 @@ services:
       DB_MYSQL_USER: npm
       DB_MYSQL_PASSWORD: ${MYSQL_PASSWORD:-npm-pass}
       DB_MYSQL_NAME: npm
+      # NPM 2.13+ has no built-in admin@example.com user; create one on first boot
+      INITIAL_ADMIN_EMAIL: ${NPM_ADMIN_EMAIL:-admin@example.com}
+      INITIAL_ADMIN_PASSWORD: ${NPM_ADMIN_PASSWORD:-changeme}
     ports:
       - "80:80"
       - "443:443"
@@ -34,24 +37,6 @@ services:
       - ./data/nginx/npm:/data
     depends_on:
       - nginx-db
-    networks:
-      - homelab
-    restart: unless-stopped
-
-  # -----------------------
-  # 📦 Container Management
-  # -----------------------
-  portainer:
-    image: portainer/portainer-ce:alpine-sts
-    container_name: portainer
-    ports:
-      - "8000:8000"
-      - "9000:9000"
-    environment:
-      - TZ=${TZ:-America/New_York}
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./data/portainer:/data
     networks:
       - homelab
     restart: unless-stopped
@@ -118,13 +103,52 @@ services:
       - homelab
     restart: unless-stopped
 
+  # -----------------------
+  # 🔐 Single Sign-On (SSO)
+  # -----------------------
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    environment:
+      - TZ=${TZ:-America/New_York}
+    volumes:
+      - ./data/redis:/data
+    networks:
+      - homelab
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+
+  authelia:
+    image: authelia/authelia:latest
+    container_name: authelia
+    ports:
+      - "9091:9091"
+    environment:
+      - TZ=${TZ:-America/New_York}
+      - AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET=${AUTHELIA_JWT_SECRET}
+      - AUTHELIA_SESSION_SECRET=${AUTHELIA_SESSION_SECRET}
+      - AUTHELIA_STORAGE_ENCRYPTION_KEY=${AUTHELIA_STORAGE_ENCRYPTION_KEY}
+      # SMTP Configuration - uncomment and set these to enable email notifications
+      # - AUTHELIA_NOTIFIER_SMTP_ADDRESS=submission://${AUTHELIA_NOTIFIER_SMTP_HOST:-smtp.gmail.com}:${AUTHELIA_NOTIFIER_SMTP_PORT:-587}
+      # - AUTHELIA_NOTIFIER_SMTP_USERNAME=${AUTHELIA_NOTIFIER_SMTP_USERNAME}
+      # - AUTHELIA_NOTIFIER_SMTP_PASSWORD=${AUTHELIA_NOTIFIER_SMTP_PASSWORD}
+      # - AUTHELIA_NOTIFIER_SMTP_SENDER=${AUTHELIA_NOTIFIER_SMTP_SENDER:-jerrod.sunderland@gmail.com}
+    volumes:
+      - ./config/authelia:/config
+      - ./data/authelia:/data
+    depends_on:
+      - redis
+    networks:
+      - homelab
+    restart: unless-stopped
+
 networks:
   homelab:
     external: true
 
 volumes:
-  portainer_data:
-    driver: local
   uptime_kuma_data:
     driver: local
   duplicati_config:

@@ -7,11 +7,7 @@
         href: http://localhost:81/
         widget:
           type: iframe
-          url: http://nginx-pm:81/
-    - Portainer:
-        icon: portainer
-        description: Docker container management
-        href: http://localhost:9000/
+          url: http://localhost:81/
     - Uptime Kuma:
         icon: uptimekuma
         description: Uptime monitoring & status
@@ -29,7 +25,7 @@
         href: http://localhost:8081/admin/
         widget:
           type: adguardhome
-          url: http://adguardhome:80
+          url: http://adguardhome:8081
 
 # Smart Home
 - Smart Home:

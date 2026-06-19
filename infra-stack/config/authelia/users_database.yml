@@ -1,0 +1,13 @@
+###############################################################################
+#                           Users Database                                    #
+###############################################################################
+
+users:
+
+  admin :
+    displayname : "Administrator"
+    password : "$argon2id$v=19$m=65536,t=3,p=4$Fp1uMVdcDpBMZZYlnVwJ/A$3Q9zVO4Gbe9FFaKi1mVKBHYDp+D1E2J1MfogFqTXz14"
+    email : jerrod.sunderland@gmail.com
+    groups:
+      - users
+

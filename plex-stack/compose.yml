@@ -25,11 +25,15 @@ services:
   #   restart: unless-stopped
 
   qbittorrent:
-    image: lscr.io/linuxserver/qbittorrent:latest
+    image: lscr.io/linuxserver/qbittorrent:4.6.7
     container_name: qbittorrent
     # network_mode: service:gluetun
     # depends_on:
     #   - gluetun
+    ports:
+      - "8080:8080"
+      - "6881:6881"
+      - "6881:6881/udp"
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
@@ -39,8 +43,9 @@ services:
       - homelab
     volumes:
       - ./config/qbittorrent:/config
-      - ./data/downloads:/downloads
-    # Note: qbittorrent uses gluetun network, inherits its network config
+      - ${DATA_PATH:-./data}:/data
+    restart: unless-stopped
+    # Note: when gluetun is enabled, remove the ports block above and uncomment network_mode/depends_on
 
   sabnzbd:
     image: lscr.io/linuxserver/sabnzbd:latest
@@ -81,7 +86,7 @@ services:
       - PLEX_CLAIM=${PLEX_CLAIM}
     volumes:
       - ./config/plex:/config
-      - ./data/media:/data/media
+      - ${DATA_PATH:-./data}/media:/data/media
     networks:
       - homelab
     restart: unless-stopped
@@ -97,7 +102,7 @@ services:
       - TZ=${TZ}
     volumes:
       - ./config/sonarr:/config
-      - ./data:/data
+      - ${DATA_PATH:-./data}:/data
     networks:
       - homelab
     restart: unless-stopped
@@ -113,7 +118,7 @@ services:
       - TZ=${TZ}
     volumes:
       - ./config/radarr:/config
-      - ./data:/data
+      - ${DATA_PATH:-./data}:/data
     networks:
       - homelab
     restart: unless-stopped
@@ -129,7 +134,7 @@ services:
       - TZ=${TZ}
     volumes:
       - ./config/lidarr:/config
-      - ./data:/data
+      - ${DATA_PATH:-./data}:/data
     networks:
       - homelab
     restart: unless-stopped
@@ -145,7 +150,7 @@ services:
       - TZ=${TZ}
     volumes:
       - ./config/readarr:/config
-      - ./data:/data
+      - ${DATA_PATH:-./data}:/data
     networks:
       - homelab
     restart: unless-stopped
@@ -176,7 +181,7 @@ services:
       - TZ=${TZ}
     volumes:
       - ./config/bazarr:/config
-      - ./data:/data
+      - ${DATA_PATH:-./data}:/data
     networks:
       - homelab
     restart: unless-stopped

@@ -10,10 +10,27 @@ This setup is split into independent stacks:
 
 ## Quick Start with npm scripts
 
-**Start entire ecosystem:**
+### First-run note
+
+On a fresh AdGuard install, finish the wizard at `http://localhost:3002` when prompted, then continue (or re-run `npm run setup:dns`). After setup, the admin UI is at `http://localhost:8081`.
+
+After setup, use `http://sonarr.home.lab`, `http://plex.home.lab`, etc. — you should hit the Authelia login first.
+
+Also change the NPM default password at `http://localhost:81` after first login.
+
+> maybe ignore some of the setup below, i need to update this readme
+
+**First-time setup (configs, SSO, NPM routes, DNS):**
 
 ```bash
 npm run setup
+```
+
+Prompts only for SSO passwords, NPM password, and AdGuard credentials. Re-run safely — skips steps already done.
+
+**Start entire ecosystem (after setup):**
+
+```bash
 npm run start:all
 ```
 

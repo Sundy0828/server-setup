@@ -1,0 +1,83 @@
+---
+# Authelia configuration for homelab SSO (home.lab).
+# Secrets are supplied via infra-stack/.env (AUTHELIA_* environment variables).
+
+theme: 'auto'
+
+server:
+  address: 'tcp://0.0.0.0:9091/'
+
+log:
+  level: 'info'
+
+identity_validation:
+  reset_password:
+    jwt_secret: 'placeholder_overridden_by_env'
+
+authentication_backend:
+  file:
+    path: /config/users_database.yml
+    password:
+      algorithm: 'argon2'
+      iterations: 3
+      key_length: 32
+      salt_length: 16
+      memory: 65536
+      parallelism: 4
+
+access_control:
+  default_policy: 'deny'
+  rules:
+    # Direct local access during setup (before DNS/NPM)
+    - domain:
+        - 'localhost'
+        - '127.0.0.1'
+      policy: 'bypass'
+
+    # Login portal — never require forward-auth on itself
+    - domain: 'authelia.home.lab'
+      policy: 'bypass'
+
+    # Protected homelab services (password only; enable two_factor per-domain if desired)
+    - domain:
+        - 'dashboard.home.lab'
+        - 'uptime-kuma.home.lab'
+        - 'duplicati.home.lab'
+        - 'adguard.home.lab'
+        - 'assistant.home.lab'
+        - 'plex.home.lab'
+        - 'sonarr.home.lab'
+        - 'radarr.home.lab'
+        - 'lidarr.home.lab'
+        - 'bazarr.home.lab'
+        - 'prowlarr.home.lab'
+        - 'readarr.home.lab'
+        - 'qbittorrent.home.lab'
+        - 'overseerr.home.lab'
+        - 'nginx.home.lab'
+      policy: 'one_factor'
+
+session:
+  cookies:
+    - domain: 'home.lab'
+      authelia_url: 'https://authelia.home.lab'
+      default_redirection_url: 'https://dashboard.home.lab'
+  expiration: '1h'
+  inactivity: '15m'
+  redis:
+    host: 'redis'
+    port: 6379
+
+storage:
+  encryption_key: 'placeholder_overridden_by_env'
+  local:
+    path: /config/db.sqlite3
+
+notifier:
+  filesystem:
+    filename: /config/notification.txt
+
+totp:
+  issuer: 'home.lab'
+  period: 30
+  skew: 1

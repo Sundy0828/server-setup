@@ -1,0 +1,7 @@
+###############################################################################
+#                           Users Database                                    #
+###############################################################################
+# Password hashes are added interactively by: npm run setup
+# Or manually: infra-stack/helper-setup/authelia/generate-hash.bat "password"
+
+users: {}
