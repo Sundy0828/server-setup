@@ -9,6 +9,7 @@ param(
     [string]$AutheliaUrl = "http://authelia.home.lab/api/state",
     [switch]$SkipStart,
     [switch]$SkipNginx,
+    [switch]$SkipSsl,
     [switch]$SkipDns,
     [switch]$SkipStacks
 )
@@ -242,18 +243,21 @@ if (-not $SkipStart) {
     Write-Info ""
 }
 
-# Step 6: NPM proxy hosts + Authelia forward auth
-if (-not $SkipNginx) {
-    Write-Info "STEP 6: Nginx Proxy Manager routes + SSO"
+# Steps 6 + 7 both talk to NPM — resolve credentials once
+$nginxUser = ""
+$nginxPassPlain = ""
+if (-not $SkipNginx -or -not $SkipSsl) {
     $nginxUser = Get-DotEnvValue -Path $envPath -Key "NPM_ADMIN_EMAIL" -Default "admin@example.com"
     $nginxPassPlain = Get-DotEnvValue -Path $envPath -Key "NPM_ADMIN_PASSWORD" -Default "changeme"
     Write-Info "NPM login: $nginxUser (password from infra-stack/.env)"
-    Write-Info ""
-
     $customPass = Read-Host "NPM admin password [Enter = value from .env]"
-    if ($customPass) {
-        $nginxPassPlain = $customPass
-    }
+    if ($customPass) { $nginxPassPlain = $customPass }
+    Write-Info ""
+}
+
+# Step 6: NPM proxy hosts + Authelia forward auth
+if (-not $SkipNginx) {
+    Write-Info "STEP 6: Nginx Proxy Manager routes + SSO"
 
     & "$ScriptRoot\setup-nginx-authelia.ps1" `
         -NginxUrl $NginxUrl `
@@ -268,19 +272,36 @@ if (-not $SkipNginx) {
     Write-Info ""
 }
 
-# Step 7: AdGuard DNS rewrites
+# Step 7: Wildcard TLS certificate
+if (-not $SkipSsl) {
+    Write-Info "STEP 7: Wildcard TLS certificate (*.$Domain)"
+
+    & "$ScriptRoot\setup-ssl-cert.ps1" `
+        -NginxUrl $NginxUrl `
+        -NginxUser $nginxUser `
+        -NginxPass $nginxPassPlain `
+        -Domain $Domain
+
+    if ($LASTEXITCODE -ne 0 -and $null -ne $LASTEXITCODE) { exit $LASTEXITCODE }
+    Write-Info ""
+} else {
+    Write-Info "STEP 7: Skipped SSL setup (-SkipSsl)"
+    Write-Info ""
+}
+
+# Step 8: AdGuard DNS rewrites
 if (-not $SkipDns) {
-    Write-Info "STEP 7: AdGuard DNS rewrites"
+    Write-Info "STEP 8: AdGuard DNS rewrites"
     $homelabHostIp = Get-HomelabHostIp -EnvPath $envPath
     & "$ScriptRoot\setup-adguard-dns.ps1" -AdGuardUrl $AdGuardUrl -Domain $Domain -HomelabHostIp $homelabHostIp
     Write-Info ""
 } else {
-    Write-Info "STEP 7: Skipped DNS setup (-SkipDns)"
+    Write-Info "STEP 8: Skipped DNS setup (-SkipDns)"
     Write-Info ""
 }
 
-# Step 8: Restart Authelia to pick up config
-Write-Info "STEP 8: Restarting Authelia"
+# Step 9: Restart Authelia to pick up config
+Write-Info "STEP 9: Restarting Authelia"
 Push-Location (Join-Path $ProjectRoot "infra-stack")
 $prevErrorAction = $ErrorActionPreference
 $ErrorActionPreference = "Continue"
@@ -315,6 +336,7 @@ Write-Info "  AdGuard: $AdGuardUrl"
 Write-Info ""
 Write-Info "Re-run individual steps:"
 Write-Info "  npm run setup:nginx"
+Write-Info "  npm run setup:ssl"
 Write-Info "  npm run setup:dns"
 Write-Info "  npm run setup:authelia"
 Write-Info ""

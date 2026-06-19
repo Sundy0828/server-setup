@@ -23,11 +23,12 @@ function Get-AutheliaNpmAdvancedConfig {
     param([string]$Domain)
 
     # Use $user/$groups/$name/$email — not $remote_user, which conflicts with nginx built-ins.
+    # proxy_pass targets authelia by container name so the subrequest stays on the Docker
+    # internal network and never loops back through nginx's own authelia.home.lab proxy host.
     return @"
 location = /authelia/api/verify {
     internal;
-    proxy_pass https://authelia.home.lab/api/verify;
-    proxy_ssl_verify off;
+    proxy_pass http://authelia:9091/api/verify;
     proxy_pass_request_body off;
     proxy_set_header Content-Length "";
     proxy_set_header X-Original-URL `$scheme://`$http_host`$request_uri;
@@ -35,19 +36,12 @@ location = /authelia/api/verify {
     proxy_set_header X-Forwarded-For `$remote_addr;
 }
 
-location / {
-    auth_request /authelia/api/verify;
-    error_page 401 =302 http://authelia.$Domain/?rd=`$scheme://`$http_host`$request_uri;
-    auth_request_set `$user `$upstream_http_remote_user;
-    auth_request_set `$groups `$upstream_http_remote_groups;
-    auth_request_set `$name `$upstream_http_remote_name;
-    auth_request_set `$email `$upstream_http_remote_email;
-    proxy_set_header Remote-User `$user;
-    proxy_set_header Remote-Groups `$groups;
-    proxy_set_header Remote-Name `$name;
-    proxy_set_header Remote-Email `$email;
-    proxy_pass `$forward_scheme://`$server:`$port;
-}
+auth_request /authelia/api/verify;
+auth_request_set `$user `$upstream_http_remote_user;
+auth_request_set `$groups `$upstream_http_remote_groups;
+auth_request_set `$name `$upstream_http_remote_name;
+auth_request_set `$email `$upstream_http_remote_email;
+error_page 401 =302 https://authelia.home.lab/?rd=`$scheme://`$http_host`$request_uri;
 "@
 }
 
@@ -62,7 +56,7 @@ function Test-ProxyHostNeedsRepair {
         if ($config -match '\$remote_user|\$remote_groups|\$remote_name|\$remote_email') {
             return $true
         }
-        if ($config -match 'proxy_pass\s+http://authelia:9091/api/verify') {
+        if ($config -match 'proxy_pass\s+https?://authelia\.home\.lab/api/verify') {
             return $true
         }
     }
