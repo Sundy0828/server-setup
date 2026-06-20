@@ -4,25 +4,22 @@
     - Nginx Proxy Manager:
         icon: nginx
         description: Reverse proxy & SSL management
-        href: http://localhost:81/
-        widget:
-          type: iframe
-          url: http://localhost:81/
+        href: https://nginx.home.lab/
     - Uptime Kuma:
         icon: uptimekuma
         description: Uptime monitoring & status
-        href: http://localhost:3001/
+        href: https://uptime-kuma.home.lab/
     - Duplicati:
         icon: duplicati
         description: Backup solution
-        href: http://localhost:8200/
+        href: https://duplicati.home.lab/
 
 # DNS & Adblocking
 - Adblocking:
     - AdGuard Home:
         icon: adguardhome
         description: Network-wide ad blocking & DNS
-        href: http://localhost:8081/admin/
+        href: https://adguard.home.lab/
         widget:
           type: adguardhome
           url: http://adguardhome:8081
@@ -32,51 +29,36 @@
     - Home Assistant:
         icon: homeassistant
         description: Home automation platform
-        href: http://localhost:8123/
-        widget:
-          type: iframe
-          url: http://homeassistant:8123/
+        href: https://assistant.home.lab/
 
 # Media Management & Entertainment
 - Media Acquisition:
     - Sonarr:
         icon: sonarr
         description: TV series download automation
-        href: http://localhost:8989/
-        widget:
-          type: sonarr
-          url: http://sonarr:8989
-          key: ${SONARR_API_KEY}
+        href: https://sonarr.home.lab/
     - Radarr:
         icon: radarr
         description: Movie download automation
-        href: http://localhost:7878/
-        widget:
-          type: radarr
-          url: http://radarr:7878
-          key: ${RADARR_API_KEY}
+        href: https://radarr.home.lab/
     - Lidarr:
         icon: lidarr
         description: Music download automation
-        href: http://localhost:8686/
-        widget:
-          type: lidarr
-          url: http://lidarr:8686
-          key: ${LIDARR_API_KEY}
+        href: https://lidarr.home.lab/
     - Readarr:
         icon: readarr
         description: Book download automation
-        href: http://localhost:8787/
+        href: https://readarr.home.lab/
 
 - Media Indexing & Organization:
     - Prowlarr:
         icon: prowlarr
         description: Indexer manager for *arr apps
-        href: http://localhost:9696/
+        href: https://prowlarr.home.lab/
     - Bazarr:
         icon: bazarr
         description: Subtitle management
-        href: http://localhost:6767/
+        href: https://bazarr.home.lab/
     - FlareSolverr:
         icon: flaresolverr
         description: Cloudflare bypass for indexers
@@ -86,18 +68,18 @@
     - qBittorrent:
         icon: qbittorrent
         description: Torrent client (via Gluetun VPN)
-        href: http://localhost:8080/
+        href: https://qbittorrent.home.lab/
     - Overseerr:
         icon: overseerr
         description: Media request management
-        href: http://localhost:3000/
+        href: http://localhost:5055/
 
 - Media Playback:
     - Plex:
         icon: plex
         description: Media streaming server
-        href: http://localhost:32400/web
+        href: https://plex.home.lab/web
         widget:
           type: plex
           url: http://plex:32400
-          key: ${PLEX_API_KEY}
+          key: ${PLEX_TOKEN}

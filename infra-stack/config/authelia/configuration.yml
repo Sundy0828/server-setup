@@ -38,6 +38,18 @@ access_control:
     - domain: 'authelia.home.lab'
       policy: 'bypass'
 
+    # Allow *arr API paths through without SSO — API key still validates at the app
+    - domain:
+        - 'sonarr.home.lab'
+        - 'radarr.home.lab'
+        - 'lidarr.home.lab'
+        - 'bazarr.home.lab'
+        - 'prowlarr.home.lab'
+        - 'readarr.home.lab'
+      resources:
+        - '^/api(/.*)?$'
+      policy: 'bypass'
+
     # Protected homelab services (password only; enable two_factor per-domain if desired)
     - domain:
         - 'dashboard.home.lab'
@@ -54,6 +66,7 @@ access_control:
         - 'readarr.home.lab'
         - 'qbittorrent.home.lab'
         - 'overseerr.home.lab'
+        - 'audiobookshelf.home.lab'
         - 'nginx.home.lab'
       policy: 'one_factor'
 
@@ -81,3 +94,54 @@ totp:
   issuer: 'home.lab'
   period: 30
   skew: 1
+
+identity_providers:
+  oidc:
+    hmac_secret: 'oqO2u8a4yPeZ1QFgWzRSDj6GsI9XTwBV'
+    jwks:
+      - key_id: 'main'
+        algorithm: 'RS256'
+        use: 'sig'
+        key: |
+          -----BEGIN PRIVATE KEY-----
+          MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDY4AuNDnXJr5o0
+          YBu+0nisZcfDxfdwTu0Aghfvh1K6Q7mgJ6ms4Pc8YHPcvlxlpeRmsZNqT5nKfQbZ
+          PsB4XqYw//tgXWrtIWJoGUqNWuWIk0+j7FvGEDV0h9gD5GBdHM+Q9o6asUD8br57
+          JRXHOml6K8KCADZgxXfmGRkR7umVLXlLfDDBh4uiVec+hDI/LM2VFA1A860u13cp
+          Xn2Rl1LcR7ICCUmN4pS9NMz/mn/fYQwzLKt1soC0SEzWXed9W4R9XyQuft14+AtX
+          GEDfZBmOkzYnBZnCQm/5py3ZQ9mJnC062LlXMWdLHqBt2xrycxbroT0YVq44ptei
+          hdazjTIJAgMBAAECggEAEFKYe/bVJadaR0veerezjmIgrVrmeyTtkIa6D3STZOJ5
+          A5VIn3LVGM23mqsXIC1iqdn+mtc/324WiF5BNS4GexShEkklpZBILEaPBmGLegKA
+          UXmWFKueolUhDHXxTMDA3Iu6AumJVxZsrq8FWxfJ3YCSpJ8oeJMUKZTE/sUI/omo
+          m8mv6DANcKqWmDcTvIAzHYrk7zv1rQ+7ZXmA3dnCGScXNarWJuybEq1qQrzl1hVd
+          tugKhOETgfkl5I7AGUN3IC6CPqSlitmiD8bdw1nnGm2aJwjbFPsHOyT5mlST7KBF
+          H6u4ObaeYFKMoKriHMS9iQksuxDBpefmmlXp+HjiqQKBgQDe0O2Mhwh7lwnMZAtZ
+          GZsLevxMVNsUgTc4fR5ieV6tWBJOyGMOa4o89p0cPtIonCjQ+HhwrSimrD30dM2H
+          L5WXs7XxtEinsrZ5pf/A0t0YfRD4c3mvqbOdjolIjoPh+YmjnlNgllPJrN2Sq70V
+          8ygqKr6+WI6qJS3gOEmIaftwpQKBgQD5LJzuFvJNK/effukPWlsMg9BdjUDMUXsp
+          +s6ow9mrxmyKCJMquFMZ3pjjKqbVzB+C3TEUnVOEfx5O2L8UI4xzYmxs4jnv8TiE
+          W6UfefoskeZ7oz/ScA6DNYTGoPkzQ4+NowQ/yuqjWzPLtBPbwRjtwE2NZgu1kWGI
+          acSA0Y56lQKBgQC7EfCPToPZt8p7NvesG+pnbh9LOucgxQgGvk13Ye0SXmIokOdR
+          oQpT+r2XjErH26wNHr+H4mnB3dS6XCJ+wH24+yHjx3hEi6/WXH9odeE5AS/xWIou
+          6KyruJMcPsMNQ4PCwlfAPRYluaPh05ySRC9Rj8fLafCFe2eT284o4MpBHQKBgQCO
+          eFPCTpx8Q4dySr43aRJmNXgOBZXnPS+O8Tj4hgMPlIS65+w9oObjA8OnH9wEopHh
+          4VcO0mXOfGB39LZMbYcA8mXMXA2EhAgspbnkJXpFwaZnSxBS4n9pxlAEwkW6agbK
+          lUr4rq06egtDjdNM8zuttSaikpZfWqDJvq/8d9VfgQKBgQCIpAVB19BWnWsJa4rw
+          vywdSLvsdLpQ0PR3e0o1EWWO9GHcDS1Kjl7TvouJ9tQhj69T0nLZidWZ9Ux3yjF3
+          9mnQEVmeQF9ocJ5GVLGhtHCVoH+a0tI6Z+5TvQ6jo4OmXWrmR5zEvvRVl36PQEUq
+          jAUgUJM6lVC0XHtQzPQB3MXM1Q==
+          -----END PRIVATE KEY-----
+    clients:
+      - client_id: 'audiobookshelf'
+        client_name: 'Audiobookshelf'
+        client_secret: '$pbkdf2-sha512$310000$4vaoqQtuKMSi1lMK0HdPHQ$szsNbPRMQubK49.huESOnwyyH6dOUanvUY7V6PCmehbvRIFAUSnqBajF63QvRsmuJTnN1kpuKH4Nb9ETUHXO0A'
+        public: false
+        authorization_policy: 'one_factor'
+        redirect_uris:
+          - 'https://audiobookshelf.home.lab/auth/openid/callback'
+        scopes:
+          - 'openid'
+          - 'profile'
+          - 'email'
+        userinfo_signed_response_alg: 'none'
+        token_endpoint_auth_method: 'client_secret_post'

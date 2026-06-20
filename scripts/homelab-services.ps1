@@ -67,8 +67,9 @@ $script:HomelabServices = @(
     @{ name = "prowlarr";     host = "prowlarr";      port = 9696;  ws = $false; skipAuth = $false; dns = $true }
     @{ name = "readarr";      host = "readarr";       port = 8787;  ws = $false; skipAuth = $false; dns = $true }
     @{ name = "qbittorrent";  host = "qbittorrent";   port = 8080;  ws = $false; skipAuth = $false; dns = $true }
-    @{ name = "overseerr";    host = "overseerr";     port = 5055;  ws = $false; skipAuth = $false; dns = $true }
-    @{ name = "nginx";        host = "nginx";         port = 81;    ws = $false; skipAuth = $false; dns = $true }
+    @{ name = "overseerr";       host = "overseerr";       port = 5055;  ws = $false; skipAuth = $false; dns = $true }
+    @{ name = "audiobookshelf"; host = "audiobookshelf";  port = 80;    ws = $true;  skipAuth = $false; dns = $true }
+    @{ name = "nginx";          host = "nginx";           port = 81;    ws = $false; skipAuth = $false; dns = $true }
 )
 
 function Get-HomelabDnsDomains {

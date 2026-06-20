@@ -2,50 +2,56 @@ services:
   # -----------------------
   # 🔐 VPN egress for download clients
   # -----------------------
-  # gluetun:
-  #   image: qmcgaw/gluetun:latest
-  #   container_name: gluetun
-  #   cap_add:
-  #     - NET_ADMIN
-  #   environment:
-  #     - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER}
-  #     - VPN_TYPE=${VPN_TYPE}
-  #     - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
-  #     - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESSES}
-  #     - TZ=${TZ}
-  #     - FIREWALL_INPUT_PORTS=8080,6881
-  #   ports:
-  #     - "8080:8080"
-  #     - "6881:6881"
-  #     - "6881:6881/udp"
-  #   volumes:
-  #     - ./config/gluetun:/gluetun
-  #   networks:
-  #     - homelab
-  #   restart: unless-stopped
+  gluetun:
+    image: qmcgaw/gluetun:latest
+    container_name: gluetun
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER}
+      - VPN_TYPE=${VPN_TYPE}
+      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
+      - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESSES}
+      - SERVER_COUNTRIES=USA
+      - TZ=${TZ}
+      - FIREWALL_INPUT_PORTS=8080
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./config/gluetun:/gluetun
+    networks:
+      - homelab
+    restart: unless-stopped
 
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:4.6.7
     container_name: qbittorrent
-    # network_mode: service:gluetun
-    # depends_on:
-    #   - gluetun
-    ports:
-      - "8080:8080"
-      - "6881:6881"
-      - "6881:6881/udp"
+    network_mode: service:gluetun
+    depends_on:
+      - gluetun
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TZ}
       - WEBUI_PORT=8080
-    networks:
-      - homelab
     volumes:
       - ./config/qbittorrent:/config
       - ${DATA_PATH:-./data}:/data
     restart: unless-stopped
-    # Note: when gluetun is enabled, remove the ports block above and uncomment network_mode/depends_on
+
+  qbittorrent-port-forward:
+    image: mjmeli/qbittorrent-port-forward-gluetun-server:latest
+    container_name: qbittorrent-port-forward
+    network_mode: service:gluetun
+    depends_on:
+      - gluetun
+      - qbittorrent
+    environment:
+      - QBT_USERNAME=${QBT_USERNAME:-admin}
+      - QBT_PASSWORD=${QBT_PASSWORD}
+      - QBT_ADDR=http://localhost:8080
+      - GTN_ADDR=http://localhost:8000
+    restart: unless-stopped
 
   sabnzbd:
     image: lscr.io/linuxserver/sabnzbd:latest
@@ -87,6 +93,8 @@ services:
     volumes:
       - ./config/plex:/config
       - ${DATA_PATH:-./data}/media:/data/media
+      - D:/Audiobooks:/data/audiobooks
+      - D:/Music/Media.localized/Music:/data/music
     networks:
       - homelab
     restart: unless-stopped
@@ -198,6 +206,22 @@ services:
       - homelab
     restart: unless-stopped
 
+  audiobookshelf:
+    image: ghcr.io/advplyr/audiobookshelf:latest
+    container_name: audiobookshelf
+    ports:
+      - "13378:80"
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ./config/audiobookshelf:/config
+      - ./config/audiobookshelf/metadata:/metadata
+      - D:/Audiobooks:/audiobooks
+      - ${DATA_PATH:-./data}/media:/data/media
+    networks:
+      - homelab
+    restart: unless-stopped
+
   overseerr:
     image: lscr.io/linuxserver/overseerr:latest
     container_name: overseerr
@@ -214,7 +238,6 @@ services:
   tailscale-overseerr:
     image: tailscale/tailscale:latest
     container_name: tailscale-overseerr
-    # hostname: ${TS_HOSTNAME}
     depends_on:
       - overseerr
     cap_add:
@@ -226,11 +249,28 @@ services:
     environment:
       - TS_AUTHKEY=${TS_AUTHKEY}
       - TS_STATE_DIR=/var/lib/tailscale
-      - TS_SERVE_CONFIG=/config/serve.json
-      - TS_EXTRA_ARGS=--reset
+      - TS_EXTRA_ARGS=--hostname=${TS_HOSTNAME} --reset
     volumes:
       - ./config/tailscale-overseerr/state:/var/lib/tailscale
-      - ./config/tailscale-overseerr:/config
+    restart: unless-stopped
+
+  tailscale-audiobookshelf:
+    image: tailscale/tailscale:latest
+    container_name: tailscale-audiobookshelf
+    depends_on:
+      - audiobookshelf
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    network_mode: service:audiobookshelf
+    environment:
+      - TS_AUTHKEY=${TS_AUTHKEY}
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_EXTRA_ARGS=--hostname=${TS_HOSTNAME_ABS} --reset
+    volumes:
+      - ./config/tailscale-audiobookshelf/state:/var/lib/tailscale
     restart: unless-stopped
 
 networks:
