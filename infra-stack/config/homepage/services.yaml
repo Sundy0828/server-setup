@@ -13,6 +13,10 @@
         icon: duplicati
         description: Backup solution
         href: https://duplicati.home.lab/
+    - Authelia:
+        icon: authelia
+        description: Single sign-on & access control
+        href: https://authelia.home.lab/
 
 # DNS & Adblocking
 - Adblocking:
@@ -21,8 +25,10 @@
         description: Network-wide ad blocking & DNS
         href: https://adguard.home.lab/
         widget:
-          type: adguardhome
-          url: http://adguardhome:8081
+          type: adguard
+          url: http://adguardhome:80
+          username: admin
+          password: "2N#V5l17J$id!w"
 
 # Smart Home
 - Smart Home:
@@ -72,14 +78,14 @@
     - Overseerr:
         icon: overseerr
         description: Media request management
-        href: http://localhost:5055/
+        href: https://overseerr.home.lab/
 
 - Media Playback:
+    - Audiobookshelf:
+        icon: audiobookshelf
+        description: Audiobook & podcast server
+        href: https://audiobookshelf.home.lab/
     - Plex:
         icon: plex
         description: Media streaming server
         href: https://plex.home.lab/web
-        widget:
-          type: plex
-          url: http://plex:32400
-          key: ${PLEX_TOKEN}

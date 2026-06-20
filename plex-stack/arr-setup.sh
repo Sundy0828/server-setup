@@ -45,6 +45,10 @@ FLARESOLVERR_HOST="${FLARESOLVERR_HOST:-flaresolverr}"
 QB_USERNAME="${QB_USERNAME:-admin}"
 QB_PASSWORD="${QB_PASSWORD:-}"
 
+# ── Rutracker credentials (optional — set in arr-setup.env to auto-add) ──────
+RUTRACKER_USER="${RUTRACKER_USER:-}"
+RUTRACKER_PASS="${RUTRACKER_PASS:-}"
+
 # ── Media paths (inside containers) ──────────────────────────────────────────
 TV_PATH="${TV_PATH:-/data/media/tv}"
 MOVIES_PATH="${MOVIES_PATH:-/data/media/movies}"
@@ -518,6 +522,59 @@ setup_prowlarr_indexers() {
     fi
 
     if prowlarr_post "/indexer" "$payload" >/dev/null; then
+      log_ok "Prowlarr: indexer added — ${display_name}"
+    else
+      log_warn "Prowlarr: failed to add ${display_name}"
+    fi
+  done
+
+  # Native (non-Cardigann) indexers: "Display Name|implementationName|needs-rutracker-creds"
+  local -a NATIVE_INDEXERS=(
+    "Knaben|Knaben|0"
+    "Rutracker|Rutracker|1"
+  )
+
+  local impl_name needs_creds native_schema native_payload
+  for entry in "${NATIVE_INDEXERS[@]}"; do
+    display_name="${entry%%|*}"
+    rest="${entry#*|}"
+    impl_name="${rest%%|*}"
+    needs_creds="${rest##*|}"
+
+    if [[ "$needs_creds" == "1" && ( -z "$RUTRACKER_USER" || -z "$RUTRACKER_PASS" ) ]]; then
+      log_skip "Prowlarr: ${display_name} — set RUTRACKER_USER / RUTRACKER_PASS in arr-setup.env to add"
+      continue
+    fi
+
+    if echo "$existing" | jq -e --arg n "$display_name" 'any(.[]; .name == $n)' &>/dev/null; then
+      log_skip "Prowlarr: ${display_name} already added"
+      continue
+    fi
+
+    native_schema=$(echo "$all_schemas" | jq --arg impl "$impl_name" \
+      'first(.[] | select(.implementationName == $impl)) // null' 2>/dev/null)
+
+    if [[ -z "$native_schema" || "$native_schema" == "null" ]]; then
+      log_warn "Prowlarr: '${impl_name}' not in schema library — skipping ${display_name}"
+      continue
+    fi
+
+    if [[ "$needs_creds" == "1" ]]; then
+      native_payload=$(echo "$native_schema" | jq \
+        --arg n "$display_name" --argjson pid "$app_profile_id" \
+        --arg user "$RUTRACKER_USER" --arg pass "$RUTRACKER_PASS" \
+        'del(.id) | .enable = true | .name = $n | .appProfileId = $pid |
+         .fields = (.fields | map(
+           if .name == "username" then .value = $user
+           elif .name == "password" then .value = $pass
+           else . end
+         ))')
+    else
+      native_payload=$(echo "$native_schema" | jq --arg n "$display_name" --argjson pid "$app_profile_id" \
+        'del(.id) | .enable = true | .name = $n | .appProfileId = $pid')
+    fi
+
+    if prowlarr_post "/indexer" "$native_payload" >/dev/null; then
       log_ok "Prowlarr: indexer added — ${display_name}"
     else
       log_warn "Prowlarr: failed to add ${display_name}"

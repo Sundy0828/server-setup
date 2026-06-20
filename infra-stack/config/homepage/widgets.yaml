@@ -14,18 +14,3 @@
       timeStyle: short
       dateStyle: short
 
-- systeminformation:
-    cpu: true
-    memory: true
-    disk: true
-    uptime: true
-    swapMemory: true
-    kernel: true
-
-- docker:
-    show: true
-    stats: true
-    showStats: true
-    sort: name
-    labels:
-      - io.portainer.accesscontrol.public
