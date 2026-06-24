@@ -43,14 +43,26 @@
         icon: sonarr
         description: TV series download automation
         href: https://sonarr.home.lab/
+        widget:
+          type: sonarr
+          url: http://sonarr:8989
+          key: ${SONARR_API_KEY}
     - Radarr:
         icon: radarr
         description: Movie download automation
         href: https://radarr.home.lab/
+        widget:
+          type: radarr
+          url: http://radarr:7878
+          key: ${RADARR_API_KEY}
     - Lidarr:
         icon: lidarr
         description: Music download automation
         href: https://lidarr.home.lab/
+        widget:
+          type: lidarr
+          url: http://lidarr:8686
+          key: ${LIDARR_API_KEY}
     - Readarr:
         icon: readarr
         description: Book download automation
@@ -61,6 +73,10 @@
         icon: prowlarr
         description: Indexer manager for *arr apps
         href: https://prowlarr.home.lab/
+        widget:
+          type: prowlarr
+          url: http://prowlarr:9696
+          key: ${PROWLARR_API_KEY}
     - Bazarr:
         icon: bazarr
         description: Subtitle management

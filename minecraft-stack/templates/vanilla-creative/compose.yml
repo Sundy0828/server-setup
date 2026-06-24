@@ -1,0 +1,44 @@
+services:
+  minecraft:
+    image: itzg/minecraft-server:latest
+    container_name: ${MC_CONTAINER_NAME:-minecraft}
+    ports:
+      - "${MC_PORT:-25565}:25565"
+    environment:
+      - EULA=TRUE
+      - TYPE=${MC_TYPE:-VANILLA}
+      - VERSION=${MC_VERSION:-LATEST}
+      - MEMORY=${MC_MEMORY:-3G}
+      - TZ=${TZ:-America/New_York}
+      - GAMEMODE=${MC_GAMEMODE:-creative}
+      - DIFFICULTY=${MC_DIFFICULTY:-peaceful}
+      - MAX_PLAYERS=${MC_MAX_PLAYERS:-20}
+      - MOTD=${MC_MOTD:-A Minecraft Server}
+      - PVP=${MC_PVP:-false}
+      - ENABLE_WHITELIST=${MC_ENABLE_WHITELIST:-false}
+      - ENABLE_ROLLING_LOGS=true
+      - CF_PAGE_URL=${CF_PAGE_URL:-}
+      - CF_API_KEY=${CF_API_KEY:-}
+    volumes:
+      - ./data:/data
+    networks:
+      - homelab
+    restart: unless-stopped
+
+  playit:
+    image: ghcr.io/playit-cloud/playit-agent:latest
+    container_name: ${PLAYIT_CONTAINER_NAME:-playit-minecraft}
+    profiles: ["playit"]
+    depends_on:
+      - minecraft
+    environment:
+      - SECRET_KEY=${PLAYIT_SECRET_KEY:-}
+    volumes:
+      - ./data/playit:/root/.config/playit_gg
+    networks:
+      - homelab
+    restart: unless-stopped
+
+networks:
+  homelab:
+    external: true
