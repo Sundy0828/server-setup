@@ -9,6 +9,7 @@ npm run new:minecraft:paper    -- my-server      # Paper (optimized vanilla, rec
 npm run new:minecraft:vanilla  -- my-server      # Pure vanilla survival
 npm run new:minecraft:creative -- my-server      # Vanilla creative
 npm run new:minecraft:curseforge -- my-server    # CurseForge modpack
+npm run new:minecraft:hardcore -- my-server      # Paper hardcore (die = world over)
 
 # Full control (any type, custom port):
 npm run new:minecraft -- -Name my-server -Type vanilla-survival -Port 25566
@@ -26,6 +27,7 @@ For CurseForge servers, open the `.env` and set `CF_PAGE_URL` and `CF_API_KEY` b
 | `vanilla-survival` | VANILLA | survival | 4G |
 | `vanilla-creative` | VANILLA | creative / peaceful | 3G |
 | `curseforge` | AUTO_CURSEFORGE | survival | 8G |
+| `paper-hardcore` | PAPER | survival / hard / hardcore | 6G |
 
 Templates live in `minecraft-stack/templates/`. You can also copy them manually if you prefer.
 
@@ -68,7 +70,8 @@ minecraft-stack/
 │   ├── paper-survival/       # Paper survival (recommended default)
 │   ├── vanilla-survival/     # Pure vanilla survival
 │   ├── vanilla-creative/     # Vanilla creative
-│   └── curseforge/           # CurseForge modpack
+│   ├── curseforge/           # CurseForge modpack
+│   └── paper-hardcore/       # Paper hardcore
 │
 └── servers/                  # Created by npm run new:minecraft:*
     └── my-server/

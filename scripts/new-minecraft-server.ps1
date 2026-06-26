@@ -2,7 +2,7 @@ param(
     [Parameter(Mandatory=$false, Position=0)]
     [string]$Name,
     [Parameter(Mandatory=$false)]
-    [ValidateSet("paper-survival", "vanilla-survival", "vanilla-creative", "curseforge")]
+    [ValidateSet("paper-survival", "vanilla-survival", "vanilla-creative", "curseforge", "curseforge-manual", "paper-hardcore")]
     [string]$Type = "paper-survival",
     [Parameter(Mandatory=$false)]
     [int]$Port = 0
@@ -10,13 +10,14 @@ param(
 
 if (-not $Name) {
     Write-Host "Usage:"
-    Write-Host "  npm run new:minecraft -- -Name <server-name> [-Type paper-survival|vanilla-survival|vanilla-creative|curseforge] [-Port 25565]"
+    Write-Host "  npm run new:minecraft -- -Name <server-name> [-Type paper-survival|vanilla-survival|vanilla-creative|curseforge|paper-hardcore] [-Port 25565]"
     Write-Host ""
     Write-Host "Or via typed shortcuts:"
     Write-Host "  npm run new:minecraft:paper -- my-server"
     Write-Host "  npm run new:minecraft:vanilla -- my-server"
     Write-Host "  npm run new:minecraft:creative -- my-server"
     Write-Host "  npm run new:minecraft:curseforge -- my-server"
+    Write-Host "  npm run new:minecraft:hardcore -- my-server"
     exit 1
 }
 
@@ -37,6 +38,7 @@ if (Test-Path $targetPath) {
     exit 1
 }
 
+New-Item -ItemType Directory -Force $serversDir | Out-Null
 Copy-Item -Recurse $templatePath $targetPath
 
 $envExample = Join-Path $targetPath ".env.example"
@@ -44,8 +46,7 @@ $envFile = Join-Path $targetPath ".env"
 
 if (Test-Path $envExample) {
     $content = Get-Content $envExample -Raw
-    $content = $content -replace "MC_CONTAINER_NAME=.*", "MC_CONTAINER_NAME=minecraft-$Name"
-    $content = $content -replace "PLAYIT_CONTAINER_NAME=.*", "PLAYIT_CONTAINER_NAME=playit-$Name"
+    $content = $content -replace "PLAYIT_CONTAINER_NAME=.*", "PLAYIT_CONTAINER_NAME=playit-minecraft"
     if ($Port -gt 0) {
         $content = $content -replace "MC_PORT=.*", "MC_PORT=$Port"
     }

@@ -6,15 +6,16 @@ services:
       - "${MC_PORT:-25565}:25565"
     environment:
       - EULA=TRUE
-      - TYPE=${MC_TYPE:-AUTO_CURSEFORGE}
+      - TYPE=${MC_TYPE:-PAPER}
       - VERSION=${MC_VERSION:-LATEST}
-      - MEMORY=${MC_MEMORY:-8G}
+      - MEMORY=${MC_MEMORY:-6G}
       - TZ=${TZ:-America/New_York}
       - GAMEMODE=${MC_GAMEMODE:-survival}
       - DIFFICULTY=${MC_DIFFICULTY:-normal}
       - MAX_PLAYERS=${MC_MAX_PLAYERS:-20}
-      - MOTD=${MC_MOTD:-A Modded Minecraft Server}
+      - MOTD=${MC_MOTD:-A Minecraft Server}
       - PVP=${MC_PVP:-true}
+      - HARDCORE=${MC_HARDCORE:-false}
       - ENABLE_WHITELIST=${MC_ENABLE_WHITELIST:-false}
       - ENABLE_ROLLING_LOGS=true
       - CF_PAGE_URL=${CF_PAGE_URL:-}
