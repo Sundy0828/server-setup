@@ -39,19 +39,22 @@ services:
       - ${DATA_PATH:-./data}:/data
     restart: unless-stopped
 
-  qbittorrent-port-forward:
-    image: mjmeli/qbittorrent-port-forward-gluetun-server:latest
-    container_name: qbittorrent-port-forward
-    network_mode: service:gluetun
-    depends_on:
-      - gluetun
-      - qbittorrent
-    environment:
-      - QBT_USERNAME=${QBT_USERNAME:-admin}
-      - QBT_PASSWORD=${QBT_PASSWORD}
-      - QBT_ADDR=http://localhost:8080
-      - GTN_ADDR=http://localhost:8000
-    restart: unless-stopped
+  # Disabled: Mullvad discontinued port forwarding for torrenting in 2023, so this
+  # sidecar can never succeed against the current VPN provider. Re-enable when
+  # switching to a VPN provider that still supports port forwarding.
+  # qbittorrent-port-forward:
+  #   image: mjmeli/qbittorrent-port-forward-gluetun-server:latest
+  #   container_name: qbittorrent-port-forward
+  #   network_mode: service:gluetun
+  #   depends_on:
+  #     - gluetun
+  #     - qbittorrent
+  #   environment:
+  #     - QBT_USERNAME=${QBT_USERNAME:-admin}
+  #     - QBT_PASSWORD=${QBT_PASSWORD}
+  #     - QBT_ADDR=http://localhost:8080
+  #     - GTN_ADDR=http://localhost:8000
+  #   restart: unless-stopped
 
   sabnzbd:
     image: lscr.io/linuxserver/sabnzbd:latest
@@ -93,8 +96,8 @@ services:
     volumes:
       - ./config/plex:/config
       - ${DATA_PATH:-./data}/media:/data/media
-      - D:/Audiobooks:/data/audiobooks
-      - D:/Music/Media.localized/Music:/data/music
+      - ${AUDIOBOOKS_PATH}:/data/audiobooks
+      - ${MUSIC_PATH}:/data/music
     networks:
       - homelab
     restart: unless-stopped
@@ -216,7 +219,7 @@ services:
     volumes:
       - ./config/audiobookshelf:/config
       - ./config/audiobookshelf/metadata:/metadata
-      - D:/Audiobooks:/audiobooks
+      - ${AUDIOBOOKS_PATH}:/audiobooks
       - ${DATA_PATH:-./data}/media:/data/media
     networks:
       - homelab

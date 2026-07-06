@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(apt-cache *)",
+      "Bash(apt list *)",
+      "Bash(dpkg -l*)",
+      "Bash(dpkg -L*)",
+      "Bash(systemctl is-active *)",
+      "Bash(systemctl list-unit-files*)",
+      "Bash(systemctl status *)",
+      "Bash(docker network ls)",
+      "Bash(docker --version)",
+      "Bash(docker compose version)",
+      "Bash(ip addr show*)",
+      "Bash(hostname -I)",
+      "Bash(lsblk*)",
+      "Bash(mount)"
+    ]
+  }
+}

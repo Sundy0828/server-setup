@@ -38,7 +38,10 @@ RADARR_HOST="${RADARR_HOST:-radarr}"
 LIDARR_HOST="${LIDARR_HOST:-lidarr}"
 READARR_HOST="${READARR_HOST:-readarr}"
 PROWLARR_HOST="${PROWLARR_HOST:-prowlarr}"
-QBIT_HOST="${QBIT_HOST:-qbittorrent}"
+# qbittorrent uses network_mode: service:gluetun in compose.yml, so it has no
+# DNS name of its own on the homelab network — other containers must reach it
+# via gluetun's hostname.
+QBIT_HOST="${QBIT_HOST:-gluetun}"
 FLARESOLVERR_HOST="${FLARESOLVERR_HOST:-flaresolverr}"
 
 # ── qBittorrent credentials ───────────────────────────────────────────────────
