@@ -14,9 +14,11 @@ services:
       - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESSES}
       - SERVER_COUNTRIES=USA
       - TZ=${TZ}
-      - FIREWALL_INPUT_PORTS=8080
+      - FIREWALL_INPUT_PORTS=8080,9696,8191
     ports:
       - "8080:8080"
+      - "9696:9696"
+      - "8191:8191"
     volumes:
       - ./config/gluetun:/gluetun
     networks:
@@ -37,6 +39,14 @@ services:
     volumes:
       - ./config/qbittorrent:/config
       - ${DATA_PATH:-./data}:/data
+    labels:
+      - "autoheal=true"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS --max-time 5 https://1.1.1.1/cdn-cgi/trace -o /dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     restart: unless-stopped
 
   # Disabled: Mullvad discontinued port forwarding for torrenting in 2023, so this
@@ -169,16 +179,23 @@ services:
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:latest
     container_name: prowlarr
-    ports:
-      - "9696:9696"
+    network_mode: service:gluetun
+    depends_on:
+      - gluetun
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TZ}
     volumes:
       - ./config/prowlarr:/config
-    networks:
-      - homelab
+    labels:
+      - "autoheal=true"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS --max-time 5 https://1.1.1.1/cdn-cgi/trace -o /dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     restart: unless-stopped
 
   bazarr:
@@ -200,13 +217,31 @@ services:
   flaresolverr:
     image: ghcr.io/flaresolverr/flaresolverr:latest
     container_name: flaresolverr
-    ports:
-      - "8191:8191"
+    network_mode: service:gluetun
+    depends_on:
+      - gluetun
     environment:
       - TZ=${TZ}
       - LOG_LEVEL=info
-    networks:
-      - homelab
+    labels:
+      - "autoheal=true"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS --max-time 5 https://1.1.1.1/cdn-cgi/trace -o /dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  autoheal:
+    image: willfarrell/autoheal:latest
+    container_name: autoheal
+    environment:
+      - AUTOHEAL_CONTAINER_LABEL=autoheal
+      - AUTOHEAL_INTERVAL=10
+      - AUTOHEAL_START_PERIOD=60
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
 
   audiobookshelf:
